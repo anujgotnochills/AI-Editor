@@ -47,6 +47,7 @@
     const chkRemoveRetakes   = $("chk-remove-retakes");
     const chkShortenPauses   = $("chk-shorten-pauses");
     const btnRoughCut        = $("btn-rough-cut");
+    const btnSpikeCut        = $("btn-spike-cut");
     const roughCutResults    = $("rough-cut-results");
     const cutResOrig         = $("cut-res-orig");
     const cutResFinal        = $("cut-res-final");
@@ -438,6 +439,64 @@
             btnRoughCut.disabled = false;
             btnRoughCut.style.opacity = "1";
             setTimeout(hideProgress, 3500);
+        }
+    }
+
+    /* ── Step (a) Spike: In-Place Sequence Cut ──────────────────────────────── */
+    async function runSpikeCut() {
+        if (isProcessing) return;
+        isProcessing = true;
+        if (btnSpikeCut) {
+            btnSpikeCut.disabled = true;
+            btnSpikeCut.style.opacity = "0.6";
+        }
+        log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        log("🧪 RUNNING STEP (a) SPIKE: IN-PLACE SEQUENCE CUT");
+        log("Hard-coded target: Remove 5-7s & 20-22s on active sequence");
+        setStatus("Running Spike Cut…", "busy");
+        setProgress(30, "Executing SC_spikeCutInPlace in Premiere…");
+
+        try {
+            const res = await evalScript("SC_spikeCutInPlace");
+            if (!res || !res.ok) {
+                const errMsg = res ? (res.error || res.raw || JSON.stringify(res)) : "No response from ExtendScript";
+                log(`❌ Spike Cut Failed: ${errMsg}`, "error");
+                setStatus("Spike Cut Failed", "error");
+                return;
+            }
+
+            setStatus("Spike Cut Completed ✓", "ok");
+            setProgress(100, "Spike Cut Complete!");
+            log(`✅ Step (a) Spike Succeeded!`, "ok");
+            log(`Premiere Pro Version: ${res.premiereVersion}`);
+            log(`Active Sequence: "${res.sequenceName}"`);
+            log(`Clips Before: ${res.clipsBeforeCount} ➔ Clips After: ${res.clipsAfterCount} (Audio clips: ${res.audioClipsAfterCount})`);
+            log(`Duration: ${res.origDurationSec ? res.origDurationSec.toFixed(2) : '?'}s ➔ ${res.newDurationSec ? res.newDurationSec.toFixed(2) : '?'}s`);
+            log(`Removed Ranges: ${JSON.stringify(res.removedRanges)}`);
+            log(`Gap Verification: ${res.gapCheck}`);
+
+            if (res.clipDetails && res.clipDetails.length > 0) {
+                log("Timeline Clip Segments:");
+                res.clipDetails.forEach((c) => {
+                    log(`  • Clip #${c.clipIndex} [${c.name}]: ${c.start} to ${c.end} (dur ${c.duration})`);
+                });
+            }
+
+            if (res.apiLogs && res.apiLogs.length > 0) {
+                log("── ExtendScript API Execution Log ──");
+                res.apiLogs.forEach((l) => log(`  ${l}`));
+                log("────────────────────────────────────");
+            }
+        } catch (err) {
+            log(`❌ Spike Cut Execution Error: ${err.message}`, "error");
+            setStatus("Spike Cut Error", "error");
+        } finally {
+            isProcessing = false;
+            if (btnSpikeCut) {
+                btnSpikeCut.disabled = false;
+                btnSpikeCut.style.opacity = "1";
+            }
+            setTimeout(hideProgress, 3000);
         }
     }
 
@@ -942,6 +1001,10 @@
         btnRoughCut.addEventListener("click", generatePrecisionRoughCut);
     }
 
+    if (btnSpikeCut) {
+        btnSpikeCut.addEventListener("click", runSpikeCut);
+    }
+
     if (btnReimportXml) {
         btnReimportXml.addEventListener("click", async () => {
             if (!lastRoughCutResult || !lastRoughCutResult.xml_path) {
@@ -1124,6 +1187,7 @@
         detectSequenceMedia,
         switchTab,
         generatePrecisionRoughCut,
+        runSpikeCut,
         generateAndInsertCaptions,
         loadCaptionLines,
         handleWordHighlight,

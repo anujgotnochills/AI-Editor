@@ -1086,5 +1086,291 @@ function SC_createRoughCutSequence(cutListJsonPath) {
     }
 }
 
+/**
+ * SC_spikeCutInPlace
+ * Step (a) Spike: Performs an in-place cut on app.project.activeSequence,
+ * removing two hard-coded ranges (5s-7s and 20s-22s),
+ * rebuilding tracks V1 and A1 with separate contiguous clips and NO gaps.
+ */
+function SC_spikeCutInPlace() {
+    try {
+        var apiLogs = [];
+        var ppVer = app.version || "unknown";
+        apiLogs.push("Premiere Pro version: " + ppVer);
+
+        var seq = app.project.activeSequence;
+        if (!seq) {
+            return SC._err("No active sequence. Open a sequence in the timeline first.");
+        }
+        apiLogs.push("Active sequence: '" + seq.name + "'");
+
+        var vTracks = seq.videoTracks;
+        if (!vTracks || vTracks.numTracks === 0) {
+            return SC._err("Active sequence has no video tracks.");
+        }
+        var vTrack = vTracks[0];
+        var aTrack = (seq.audioTracks && seq.audioTracks.numTracks > 0) ? seq.audioTracks[0] : null;
+
+        var vClipsCount = vTrack.clips ? vTrack.clips.numItems : 0;
+        if (vClipsCount === 0) {
+            return SC._err("Video Track 1 has no clips. Place a clip on the sequence first.");
+        }
+        apiLogs.push("Initial V1 clips count: " + vClipsCount);
+
+        // 1. Read existing clips on V1
+        var origClips = [];
+        for (var i = 0; i < vClipsCount; i++) {
+            var c = vTrack.clips[i];
+            var pItem = c.projectItem;
+            var cStart = parseFloat(c.start.seconds) || 0;
+            var cEnd = parseFloat(c.end.seconds) || 0;
+            var cIn = parseFloat(c.inPoint.seconds) || 0;
+            var cOut = parseFloat(c.outPoint.seconds) || (cIn + (cEnd - cStart));
+
+            origClips.push({
+                index: i,
+                name: c.name || (pItem ? pItem.name : "Clip"),
+                start: cStart,
+                end: cEnd,
+                duration: cEnd - cStart,
+                inPoint: cIn,
+                outPoint: cOut,
+                projectItem: pItem
+            });
+            apiLogs.push("Read V1 clip " + i + ": '" + c.name + "' start=" + cStart.toFixed(2) + "s, end=" + cEnd.toFixed(2) + "s, in=" + cIn.toFixed(2) + "s, out=" + cOut.toFixed(2) + "s");
+        }
+
+        var origSeqDur = origClips[origClips.length - 1].end;
+        apiLogs.push("Total sequence duration before cut: " + origSeqDur.toFixed(2) + "s");
+
+        // 2. Define hard-coded cut ranges: remove [5s-7s] and [20s-22s]
+        var cutRanges = [];
+        var keepRanges = [];
+
+        if (origSeqDur >= 23.0) {
+            cutRanges = [
+                { start: 5.0, end: 7.0 },
+                { start: 20.0, end: 22.0 }
+            ];
+            keepRanges = [
+                { start: 0.0, end: 5.0 },
+                { start: 7.0, end: 20.0 },
+                { start: 22.0, end: origSeqDur }
+            ];
+        } else if (origSeqDur >= 10.0) {
+            var c1Start = Math.min(3.0, origSeqDur * 0.25);
+            var c1End = c1Start + 2.0;
+            var c2Start = Math.min(c1End + 2.0, origSeqDur * 0.65);
+            var c2End = Math.min(c2Start + 2.0, origSeqDur * 0.85);
+            cutRanges = [
+                { start: c1Start, end: c1End },
+                { start: c2Start, end: c2End }
+            ];
+            keepRanges = [
+                { start: 0.0, end: c1Start },
+                { start: c1End, end: c2Start },
+                { start: c2End, end: origSeqDur }
+            ];
+        } else {
+            return SC._err("Sequence duration (" + origSeqDur.toFixed(2) + "s) is too short to cut two ranges (need >= 10s).");
+        }
+
+        apiLogs.push("Cut ranges to remove: " + JSON.stringify(cutRanges));
+        apiLogs.push("Keep ranges to preserve: " + JSON.stringify(keepRanges));
+
+        // 3. Map each keep-range to source clip and source in/out:
+        // srcIn = clip.inPoint + (rangeStart - clip.start)
+        var segmentsToPlace = [];
+        for (var kr = 0; kr < keepRanges.length; kr++) {
+            var kRange = keepRanges[kr];
+            var rStart = kRange.start;
+            var rEnd = kRange.end;
+            var rDur = rEnd - rStart;
+            if (rDur <= 0.05) continue;
+
+            var matchedClip = null;
+            for (var mc = 0; mc < origClips.length; mc++) {
+                var cand = origClips[mc];
+                if (rStart >= cand.start - 0.005 && rStart < cand.end + 0.005) {
+                    matchedClip = cand;
+                    break;
+                }
+            }
+            if (!matchedClip) matchedClip = origClips[0];
+
+            var offsetInClip = rStart - matchedClip.start;
+            var srcIn = matchedClip.inPoint + offsetInClip;
+            var srcOut = srcIn + rDur;
+
+            segmentsToPlace.push({
+                segmentIndex: kr,
+                projectItem: matchedClip.projectItem,
+                rangeStart: rStart,
+                rangeEnd: rEnd,
+                duration: rDur,
+                srcIn: srcIn,
+                srcOut: srcOut
+            });
+            apiLogs.push("Mapped segment " + kr + ": [" + rStart.toFixed(2) + "s - " + rEnd.toFixed(2) + "s] (dur=" + rDur.toFixed(2) + "s) -> srcIn=" + srcIn.toFixed(2) + "s, srcOut=" + srcOut.toFixed(2) + "s");
+        }
+
+        // 4. Clear tracks V1 and A1 (iterating last to first)
+        apiLogs.push("Clearing tracks V1 & A1 (iterating last to first)...");
+        var vDeleted = 0;
+        for (var vi = vTrack.clips.numItems - 1; vi >= 0; vi--) {
+            try {
+                var cItem = vTrack.clips[vi];
+                if (typeof cItem.remove === "function") {
+                    cItem.remove(false, false);
+                    vDeleted++;
+                } else {
+                    apiLogs.push("FAIL: vTrack.clips[" + vi + "].remove is not a function");
+                }
+            } catch (vErr) {
+                apiLogs.push("FAIL removing V1 clip " + vi + ": " + vErr.message);
+            }
+        }
+        apiLogs.push("Removed " + vDeleted + " clip(s) from V1");
+
+        var aDeleted = 0;
+        if (aTrack && aTrack.clips) {
+            for (var ai = aTrack.clips.numItems - 1; ai >= 0; ai--) {
+                try {
+                    var acItem = aTrack.clips[ai];
+                    if (typeof acItem.remove === "function") {
+                        acItem.remove(false, false);
+                        aDeleted++;
+                    }
+                } catch (aErr) {
+                    apiLogs.push("FAIL removing A1 clip " + ai + ": " + aErr.message);
+                }
+            }
+            apiLogs.push("Removed " + aDeleted + " clip(s) from A1");
+        }
+
+        // 5. Place segments back-to-back using overwriteClip on the same sequence
+        apiLogs.push("Placing " + segmentsToPlace.length + " segments back-to-back with overwriteClip...");
+        var tps = 254016000000;
+        var currentTimelinePosSec = 0.0;
+        var placedCount = 0;
+
+        for (var s = 0; s < segmentsToPlace.length; s++) {
+            var seg = segmentsToPlace[s];
+            var pItem = seg.projectItem;
+            if (!pItem) {
+                apiLogs.push("FAIL: segment " + s + " has null projectItem");
+                continue;
+            }
+
+            // Set inPoint and outPoint in ticks with mediaType=4 (Video + Audio)
+            var inTicks = Math.round(seg.srcIn * tps);
+            var outTicks = Math.round(seg.srcOut * tps);
+
+            try {
+                pItem.setInPoint(String(inTicks), 4);
+                pItem.setOutPoint(String(outTicks), 4);
+                apiLogs.push("pItem.setInPoint(" + String(inTicks) + ", 4) and setOutPoint(" + String(outTicks) + ", 4) OK");
+            } catch (ioErr) {
+                apiLogs.push("WARN setting in/out ticks: " + ioErr.message + ". Trying Time object...");
+                try {
+                    var tInObj = new Time(); tInObj.seconds = seg.srcIn;
+                    var tOutObj = new Time(); tOutObj.seconds = seg.srcOut;
+                    pItem.setInPoint(tInObj.ticks, 4);
+                    pItem.setOutPoint(tOutObj.ticks, 4);
+                } catch (ioErr2) {
+                    apiLogs.push("FAIL setInPoint/setOutPoint Time object: " + ioErr2.message);
+                }
+            }
+
+            var tPlace = new Time();
+            tPlace.seconds = currentTimelinePosSec;
+
+            var placedOk = false;
+            if (typeof seq.overwriteClip === "function") {
+                try {
+                    seq.overwriteClip(pItem, tPlace, 0, 0);
+                    placedOk = true;
+                    apiLogs.push("seq.overwriteClip(pItem, " + currentTimelinePosSec.toFixed(2) + "s, 0, 0) succeeded");
+                } catch (seqOwErr) {
+                    apiLogs.push("seq.overwriteClip error: " + seqOwErr.message + ". Trying track.overwriteClip...");
+                }
+            }
+
+            if (!placedOk && typeof vTrack.overwriteClip === "function") {
+                try {
+                    vTrack.overwriteClip(pItem, tPlace);
+                    if (aTrack && typeof aTrack.overwriteClip === "function") {
+                        aTrack.overwriteClip(pItem, tPlace);
+                    }
+                    placedOk = true;
+                    apiLogs.push("vTrack.overwriteClip(pItem, " + currentTimelinePosSec.toFixed(2) + "s) succeeded");
+                } catch (trOwErr) {
+                    apiLogs.push("FAIL track.overwriteClip: " + trOwErr.message);
+                }
+            }
+
+            try { pItem.clearInPoint(); } catch (e) {}
+            try { pItem.clearOutPoint(); } catch (e) {}
+
+            if (placedOk) {
+                placedCount++;
+            }
+
+            currentTimelinePosSec += seg.duration;
+        }
+
+        // 6. Verify result on timeline
+        var finalVClips = vTrack.clips ? vTrack.clips.numItems : 0;
+        var finalAClips = (aTrack && aTrack.clips) ? aTrack.clips.numItems : 0;
+        var finalDuration = 0;
+        var clipDetails = [];
+        var gapDetected = false;
+
+        for (var fc = 0; fc < finalVClips; fc++) {
+            var fcClip = vTrack.clips[fc];
+            var sSec = parseFloat(fcClip.start.seconds) || 0;
+            var eSec = parseFloat(fcClip.end.seconds) || 0;
+            clipDetails.push({
+                clipIndex: fc,
+                name: fcClip.name,
+                start: sSec.toFixed(2) + "s",
+                end: eSec.toFixed(2) + "s",
+                duration: (eSec - sSec).toFixed(2) + "s"
+            });
+            if (fc > 0) {
+                var prevEnd = parseFloat(vTrack.clips[fc - 1].end.seconds) || 0;
+                if (Math.abs(sSec - prevEnd) > 0.05) {
+                    gapDetected = true;
+                    apiLogs.push("WARN: Gap detected between clip " + (fc - 1) + " (end=" + prevEnd.toFixed(2) + "s) and clip " + fc + " (start=" + sSec.toFixed(2) + "s)");
+                }
+            }
+            if (eSec > finalDuration) finalDuration = eSec;
+        }
+
+        var gapCheckMsg = gapDetected ? "WARNING: Gaps detected between clips!" : "VERIFIED: Separate contiguous clips with NO GAPS!";
+        apiLogs.push("Final V1 clips: " + finalVClips + ", Final duration: " + finalDuration.toFixed(2) + "s");
+        apiLogs.push(gapCheckMsg);
+
+        return SC._ok({
+            method: "Step (a) Spike: In-Place Cut",
+            premiereVersion: ppVer,
+            sequenceName: seq.name,
+            clipsBeforeCount: vClipsCount,
+            clipsAfterCount: finalVClips,
+            audioClipsAfterCount: finalAClips,
+            origDurationSec: origSeqDur,
+            newDurationSec: finalDuration,
+            removedRanges: cutRanges,
+            placedSegmentsCount: placedCount,
+            clipDetails: clipDetails,
+            gapCheck: gapCheckMsg,
+            apiLogs: apiLogs
+        });
+
+    } catch (err) {
+        return SC._err("SC_spikeCutInPlace critical error: " + err.message);
+    }
+}
+
 
 
