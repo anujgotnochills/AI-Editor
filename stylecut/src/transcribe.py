@@ -69,7 +69,7 @@ def _free_vram() -> None:
 
 def transcribe_clip(
     path: Path,
-    cache_dir: Path,
+    cache_dir: Optional[Path] = None,
     *,
     model: str = "small",
     device: str = "cpu",
@@ -80,12 +80,16 @@ def transcribe_clip(
     language: Optional[str] = None,
     initial_prompt: Optional[str] = None,
     progress_callback: Optional[Any] = None,
+    word_timestamps: bool = True,
+    **kwargs: Any,
 ) -> dict[str, Any]:
     """Transcribe a single clip and return a word-level transcript dict.
 
     The result is cached as ``cache_dir/<hash>.json``.  Unchanged clips are
     never re-transcribed.  VRAM is freed before the function returns.
     """
+    if cache_dir is None:
+        cache_dir = Path.home() / ".stylecut" / "cache" / "transcripts"
     cache_dir = Path(cache_dir)
     cache_dir.mkdir(parents=True, exist_ok=True)
 

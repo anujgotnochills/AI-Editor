@@ -566,12 +566,38 @@ class JobManager:
             transcript = params.get("transcript")
             if not transcript:
                 whisper_model = params.get("model") or "base"
-                logger.info(f"[{job_id}] Transcribing media with faster-whisper model={whisper_model}")
+                w_device = "cuda"
+                w_compute = "float16"
+                try:
+                    import torch
+                    if not torch.cuda.is_available():
+                        w_device = "cpu"
+                        w_compute = "int8"
+                except Exception:
+                    w_device = "cpu"
+                    w_compute = "int8"
+
+                def on_transcribe_progress(current_s: float, total_s: float) -> None:
+                    ratio = min(1.0, max(0.0, current_s / max(1.0, total_s)))
+                    p_pct = 15 + int(ratio * 25)
+                    cur_m, cur_s = int(current_s // 60), int(current_s % 60)
+                    tot_m, tot_s = int(total_s // 60), int(total_s % 60)
+                    p_step = f"Transcribing audio: {cur_m:02d}:{cur_s:02d} / {tot_m:02d}:{tot_s:02d} ({p_pct}%)"
+                    self._update_progress(job_id, p_pct, p_step)
+
+                logger.info(
+                    f"[{job_id}] Transcribing media with faster-whisper model={whisper_model} ({w_device.upper()})"
+                )
                 transcript = transcribe_clip(
                     media_path,
+                    self._cache_dir / "transcripts",
                     model=whisper_model,
-                    word_timestamps=True,
-                    cache_dir=self._cache_dir / "transcripts",
+                    device=w_device,
+                    compute_type=w_compute,
+                    fallback_model="base",
+                    fallback_device="cpu",
+                    fallback_compute_type="int8",
+                    progress_callback=on_transcribe_progress,
                 )
 
             # 2. Build CutEngineConfig from preset and parameters
