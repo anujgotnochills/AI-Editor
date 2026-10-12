@@ -26,6 +26,8 @@
     let isProcessing = false;
     let activeManifestPath = "";
     let activeCaptionLines = [];
+    let selectedPacing = "normal";
+    let lastRoughCutResult = null;
 
     /* ── CSInterface init ──────────────────────────────────────────────────── */
     const cs = new CSInterface();
@@ -35,6 +37,29 @@
 
     /* ── UI refs ───────────────────────────────────────────────────────────── */
     const $ = id => document.getElementById(id);
+    const tabBtnRoughCut     = $("tab-btn-rough-cut");
+    const tabBtnCaptions     = $("tab-btn-captions");
+    const paneRoughCut       = $("tab-pane-rough-cut");
+    const paneCaptions       = $("tab-pane-captions");
+    const cutPresetToggle    = $("cut-preset-toggle");
+    const cutPacingSegmented = $("cut-pacing-segmented");
+    const chkRemoveFillers   = $("chk-remove-fillers");
+    const chkRemoveRetakes   = $("chk-remove-retakes");
+    const chkShortenPauses   = $("chk-shorten-pauses");
+    const btnRoughCut        = $("btn-rough-cut");
+    const roughCutResults    = $("rough-cut-results");
+    const cutResOrig         = $("cut-res-orig");
+    const cutResFinal        = $("cut-res-final");
+    const cutResPct          = $("cut-res-pct");
+    const cutResSaved        = $("cut-res-saved");
+    const cutResCount        = $("cut-res-count");
+    const cutResQa           = $("cut-res-qa");
+    const btnReimportXml     = $("btn-reimport-xml");
+    const btnViewReport      = $("btn-view-report");
+    const reportDrawer       = $("report-drawer");
+    const reportViewContent  = $("report-view-content");
+    const btnGotoCaptions    = $("btn-goto-captions");
+
     const btnInfo       = $("btn-info");
     const btnGenerate   = $("btn-generate");
     const btnDemo       = $("btn-demo");
@@ -237,6 +262,155 @@
             log(e.message, "error");
             setStatus("Sequence read error", "error");
             return null;
+        }
+    }
+
+    /* ── Helper: Format seconds as mm:ss ──────────────────────────────────── */
+    function formatSeconds(sec) {
+        if (!sec || isNaN(sec)) return "0:00";
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    /* ── Tab Switcher ──────────────────────────────────────────────────────── */
+    function switchTab(tabKey) {
+        if (tabKey === "rough-cut" || tabKey === "tab-pane-rough-cut") {
+            if (tabBtnRoughCut) tabBtnRoughCut.classList.add("active");
+            if (tabBtnCaptions) tabBtnCaptions.classList.remove("active");
+            if (paneRoughCut) paneRoughCut.classList.add("active");
+            if (paneCaptions) paneCaptions.classList.remove("active");
+            log("Switched to Rough Cut workspace.");
+        } else if (tabKey === "captions" || tabKey === "tab-pane-captions") {
+            if (tabBtnCaptions) tabBtnCaptions.classList.add("active");
+            if (tabBtnRoughCut) tabBtnRoughCut.classList.remove("active");
+            if (paneCaptions) paneCaptions.classList.add("active");
+            if (paneRoughCut) paneRoughCut.classList.remove("active");
+            log("Switched to Captions workspace.");
+        }
+    }
+
+    /* ── Precision Rough Cut Flow (Phase 2) ────────────────────────────────── */
+    async function generatePrecisionRoughCut() {
+        if (isProcessing) return;
+
+        // 1. Verify engine is online
+        const isOnline = await pingEngine(true);
+        if (!isOnline) {
+            log("Cannot start: StyleCut engine is offline. Start 'python engine.py'", "error");
+            setStatus("Engine offline — start engine.exe", "error");
+            return;
+        }
+
+        // 2. Refresh sequence media
+        const info = await detectSequenceMedia();
+        if (!info || (!info.mediaPath && currentTimelineClips.length === 0)) {
+            log("Please open a sequence containing a video or audio clip first.", "error");
+            setStatus("No active media found", "error");
+            return;
+        }
+
+        isProcessing = true;
+        btnRoughCut.disabled = true;
+        btnRoughCut.style.opacity = "0.6";
+
+        const preset = cutPresetToggle ? cutPresetToggle.value : "reel";
+        const tighten = (selectedPacing === "tighten");
+        const loosen = (selectedPacing === "loosen");
+        const removeFillers = chkRemoveFillers ? chkRemoveFillers.checked : true;
+        const removeRetakes = chkRemoveRetakes ? chkRemoveRetakes.checked : true;
+        const shortenPauses = chkShortenPauses ? chkShortenPauses.checked : true;
+
+        log(`Starting Precision Rough Cut for: ${currentMediaPath || info.mediaPath}`);
+        log(`Options: preset=${preset}, pacing=${selectedPacing} (tighten=${tighten}, loosen=${loosen}), fillers=${removeFillers}, retakes=${removeRetakes}, shorten_pauses=${shortenPauses}`);
+        setStatus("Submitting rough cut job…", "busy");
+        setProgress(5, "Submitting rough cut job to engine…");
+
+        try {
+            const payload = {
+                media_path: currentMediaPath || info.mediaPath,
+                preset: preset,
+                tighten: tighten,
+                loosen: loosen,
+                remove_fillers: removeFillers,
+                remove_retakes: removeRetakes,
+                shorten_pauses: shortenPauses,
+                sequence_name: (info && info.name) ? `${info.name} — Rough Cut` : undefined,
+                sequence_duration: (info && info.duration) ? info.duration : undefined,
+                timeline_clips: currentTimelineClips,
+            };
+
+            const postRes = await apiPost("/jobs/rough_cut", payload);
+            const jobId = postRes.job_id;
+            log(`Rough cut job started [ID: ${jobId}]`);
+
+            // Poll progress
+            let jobDone = false;
+            let resultData = null;
+
+            while (!jobDone) {
+                await new Promise(r => setTimeout(r, 600));
+
+                const prog = await apiGet(`/jobs/${jobId}/progress`);
+                setProgress(prog.pct, prog.step);
+
+                if (prog.status === "completed") {
+                    jobDone = true;
+                    resultData = await apiGet(`/jobs/${jobId}/rough_cut_result`);
+                } else if (prog.status === "failed") {
+                    throw new Error(prog.error || "Rough cut processing failed");
+                }
+            }
+
+            lastRoughCutResult = resultData;
+            log(`Precision cuts computed: ${resultData.cuts_count} cuts placed, ${resultData.duration_saved}s saved (${resultData.reduction_pct}% reduction).`);
+
+            // 3. Import XML Sequence into Premiere Pro
+            setProgress(95, "Importing sequence XML into Premiere Pro…");
+            let xmlImported = false;
+            if (resultData.xml_path) {
+                log(`🎬 Importing XML sequence into Premiere Pro: ${resultData.xml_path}`);
+                const impRes = await evalScript("SC_importFCPXML", resultData.xml_path);
+                if (impRes && impRes.ok) {
+                    xmlImported = true;
+                    log(`🎉 Rough Cut sequence "${impRes.sequenceName || 'StyleCut Rough Cut'}" imported into Premiere!`);
+                } else {
+                    log(`XML import message: ${impRes ? (impRes.error || JSON.stringify(impRes)) : 'failed'}. Trying direct cut assembly fallback...`, "warn");
+                }
+            }
+
+            if (!xmlImported && resultData.cut_list_path) {
+                log(`Assembling timeline clips via ExtendScript fallback: ${resultData.cut_list_path}`);
+                const fbRes = await evalScript("SC_createRoughCutSequence", resultData.cut_list_path);
+                if (fbRes && fbRes.ok) {
+                    log(`🎉 Placed ${fbRes.placedCuts} cuts into sequence "${fbRes.sequenceName}"!`);
+                } else {
+                    log(`Fallback placement result: ${fbRes ? fbRes.error : 'unknown'}`, "warn");
+                }
+            }
+
+            setProgress(100, "Rough Cut Complete!");
+            setStatus("Rough Cut Created ✓", "ok");
+
+            // 4. Update and display Results card
+            if (roughCutResults) {
+                roughCutResults.style.display = "flex";
+                if (cutResOrig) cutResOrig.textContent = formatSeconds(resultData.original_duration);
+                if (cutResFinal) cutResFinal.textContent = formatSeconds(resultData.final_duration);
+                if (cutResPct) cutResPct.textContent = `-${resultData.reduction_pct}% cut`;
+                if (cutResSaved) cutResSaved.textContent = `${resultData.duration_saved}s`;
+                if (cutResCount) cutResCount.textContent = `${resultData.cuts_count} cuts`;
+                if (cutResQa) cutResQa.textContent = resultData.qa_passed ? "7/7 Passed ✓" : "Review Warnings ⚠️";
+            }
+
+        } catch (err) {
+            log(`Rough cut failed: ${err.message}`, "error");
+            setStatus("Rough cut error", "error");
+        } finally {
+            isProcessing = false;
+            btnRoughCut.disabled = false;
+            btnRoughCut.style.opacity = "1";
+            setTimeout(hideProgress, 3500);
         }
     }
 
@@ -716,6 +890,80 @@
     }
 
     /* ── Event Listeners ───────────────────────────────────────────────────── */
+    if (tabBtnRoughCut) {
+        tabBtnRoughCut.addEventListener("click", () => switchTab("rough-cut"));
+    }
+    if (tabBtnCaptions) {
+        tabBtnCaptions.addEventListener("click", () => switchTab("captions"));
+    }
+
+    if (cutPacingSegmented) {
+        cutPacingSegmented.addEventListener("click", e => {
+            const btn = e.target.closest(".segmented-btn");
+            if (!btn) return;
+            const pacing = btn.dataset.pacing;
+            if (pacing) {
+                selectedPacing = pacing;
+                cutPacingSegmented.querySelectorAll(".segmented-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                log(`Rough cut pacing set to: ${pacing}`);
+            }
+        });
+    }
+
+    if (btnRoughCut) {
+        btnRoughCut.addEventListener("click", generatePrecisionRoughCut);
+    }
+
+    if (btnReimportXml) {
+        btnReimportXml.addEventListener("click", async () => {
+            if (!lastRoughCutResult || !lastRoughCutResult.xml_path) {
+                log("No rough cut result available to re-import.", "warn");
+                return;
+            }
+            log(`Re-importing XML sequence: ${lastRoughCutResult.xml_path}`);
+            const res = await evalScript("SC_importFCPXML", lastRoughCutResult.xml_path);
+            if (res && res.ok) {
+                log(`✅ Sequence "${res.sequenceName || 'StyleCut Rough Cut'}" imported into Premiere.`);
+            } else {
+                log(`Import error: ${res ? res.error : 'unknown'}`, "error");
+            }
+        });
+    }
+
+    if (btnViewReport) {
+        btnViewReport.addEventListener("click", async () => {
+            if (!lastRoughCutResult) {
+                log("No QA report available.", "warn");
+                return;
+            }
+            if (!reportDrawer) return;
+            if (reportDrawer.style.display === "none") {
+                try {
+                    const rep = await apiGet(`/jobs/${lastRoughCutResult.job_id}/report`);
+                    if (rep && rep.markdown) {
+                        reportViewContent.textContent = rep.markdown;
+                    } else {
+                        reportViewContent.textContent = `Report saved at: ${lastRoughCutResult.report_path}`;
+                    }
+                } catch (e) {
+                    reportViewContent.textContent = `Report path: ${lastRoughCutResult.report_path}`;
+                }
+                reportDrawer.style.display = "block";
+                btnViewReport.textContent = "▲ Hide QA Report";
+            } else {
+                reportDrawer.style.display = "none";
+                btnViewReport.innerHTML = '<span class="btn-icon">📄</span> View QA Report';
+            }
+        });
+    }
+
+    if (btnGotoCaptions) {
+        btnGotoCaptions.addEventListener("click", () => {
+            switchTab("captions");
+        });
+    }
+
     btnInfo.addEventListener("click", detectSequenceMedia);
     btnGenerate.addEventListener("click", generateAndInsertCaptions);
     btnPing.addEventListener("click", () => pingEngine(false));
@@ -843,6 +1091,17 @@
     }
 
     // Expose for testing and debugging from DevTools
-    window._SC = { evalScript, pingEngine, detectSequenceMedia, generateAndInsertCaptions, loadCaptionLines, handleWordHighlight, handleTextChange, boot };
+    window._SC = {
+        evalScript,
+        pingEngine,
+        detectSequenceMedia,
+        switchTab,
+        generatePrecisionRoughCut,
+        generateAndInsertCaptions,
+        loadCaptionLines,
+        handleWordHighlight,
+        handleTextChange,
+        boot,
+    };
 
 })();

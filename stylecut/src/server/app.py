@@ -24,6 +24,8 @@ from src.server.models import (
     HealthResponse,
     JobCreationResponse,
     JobProgressResponse,
+    RoughCutJobRequest,
+    RoughCutJobResultResponse,
     TemplateInfo,
 )
 
@@ -102,6 +104,24 @@ def create_caption_job(req: CaptionJobRequest) -> JobCreationResponse:
     )
 
 
+@app.post("/jobs/rough_cut", response_model=JobCreationResponse)
+def create_rough_cut_job(req: RoughCutJobRequest) -> JobCreationResponse:
+    """Start an asynchronous precision rough cut job for a media file."""
+    path = Path(req.media_path)
+    if not path.exists():
+        raise HTTPException(
+            status_code=400,
+            detail=f"Media file not found on disk: {req.media_path}",
+        )
+
+    job_id = job_manager.create_rough_cut_job(req.model_dump())
+    return JobCreationResponse(
+        job_id=job_id,
+        status=job_manager.get_progress(job_id).status,
+        message="Precision Rough Cut job started.",
+    )
+
+
 @app.get("/jobs/{job_id}/progress", response_model=JobProgressResponse)
 def get_job_progress(job_id: str) -> JobProgressResponse:
     """Poll progress (0-100%) and current execution step."""
@@ -118,6 +138,31 @@ def get_job_result(job_id: str) -> CaptionJobResultResponse:
     if not result:
         raise HTTPException(status_code=404, detail=f"Job not found: {job_id}")
     return result
+
+
+@app.get("/jobs/{job_id}/rough_cut_result", response_model=RoughCutJobResultResponse)
+def get_rough_cut_result(job_id: str) -> RoughCutJobResultResponse:
+    """Fetch completed precision rough cut result (cut_list.json, sequence.xml, and report)."""
+    result = job_manager.get_rough_cut_result(job_id)
+    if not result:
+        raise HTTPException(status_code=404, detail=f"Rough cut job not found: {job_id}")
+    return result
+
+
+@app.get("/jobs/{job_id}/report")
+def get_rough_cut_report(job_id: str) -> dict[str, Any]:
+    """Fetch the Markdown content of the QA editorial report for a rough cut job."""
+    result = job_manager.get_rough_cut_result(job_id)
+    if not result or not result.report_path:
+        raise HTTPException(status_code=404, detail=f"QA report not found for job: {job_id}")
+    rep_path = Path(result.report_path)
+    if not rep_path.exists():
+        raise HTTPException(status_code=404, detail=f"Report file missing: {rep_path}")
+    return {
+        "job_id": job_id,
+        "markdown": rep_path.read_text(encoding="utf-8"),
+        "report_path": str(rep_path.resolve()),
+    }
 
 
 @app.get("/templates")

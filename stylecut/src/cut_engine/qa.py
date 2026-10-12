@@ -40,6 +40,28 @@ class QASuiteReport:
     metrics: dict[str, Any] = field(default_factory=dict)
     flags: list[dict[str, Any]] = field(default_factory=list)
 
+    @property
+    def passed(self) -> bool:
+        return self.overall_status in ["PASS", "WARN"]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "overall_status": self.overall_status,
+            "passed": self.passed,
+            "checks": [
+                {
+                    "name": c.name,
+                    "passed": c.passed,
+                    "status": c.status,
+                    "message": c.message,
+                    "details": c.details,
+                }
+                for c in self.checks
+            ],
+            "metrics": self.metrics,
+            "flags": self.flags,
+        }
+
 
 def run_qa_checks(
     cut_list: dict[str, Any],

@@ -103,3 +103,31 @@ class CaptionRestyleRequest(BaseModel):
     template_id: str
     style_overrides: Optional[dict[str, Any]] = None
 
+
+class RoughCutJobRequest(BaseModel):
+    media_path: str = Field(..., description="Absolute path to the video or audio file")
+    preset: str = Field("reel", description="Pacing preset: reel, talking_head, podcast, vlog")
+    tighten: bool = Field(False, description="Tighten pacing (-25% gap)")
+    loosen: bool = Field(False, description="Loosen pacing (+35% gap)")
+    remove_fillers: bool = Field(True, description="Remove filler words")
+    remove_retakes: bool = Field(True, description="Remove false starts and retakes")
+    shorten_pauses: bool = Field(True, description="Shorten silences between clauses")
+    sequence_name: Optional[str] = Field(None, description="Sequence name in Premiere Pro")
+    sequence_duration: Optional[float] = Field(None, description="Active sequence duration in seconds")
+    timeline_clips: Optional[list[TimelineClip]] = Field(None, description="Timeline clips for sync")
+
+
+class RoughCutJobResultResponse(BaseModel):
+    job_id: str
+    status: JobStatus
+    cut_list_path: Optional[str] = Field(None, description="Path to cut_list.json")
+    xml_path: Optional[str] = Field(None, description="Path to Premiere Pro FCPXML sequence")
+    report_path: Optional[str] = Field(None, description="Path to QA editorial cut_report.md")
+    original_duration: float = 0.0
+    final_duration: float = 0.0
+    duration_saved: float = 0.0
+    reduction_pct: float = 0.0
+    cuts_count: int = 0
+    qa_passed: bool = True
+    qa_summary: Optional[dict[str, Any]] = None
+

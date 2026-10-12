@@ -13,10 +13,16 @@ from pathlib import Path
 from typing import Any, Callable, Optional
 
 from src.captions import generate_ass, generate_srt, render_transparent_overlay
+from src.cut_engine import CutEngine, CutEngineConfig, CutEnginePreset
 from src.hinglish import convert_transcript_to_hinglish
 from src.llm import get_provider
 from src.render_captions import create_captions_spec, render_captions_manifest
-from src.server.models import CaptionJobResultResponse, JobProgressResponse, JobStatus
+from src.server.models import (
+    CaptionJobResultResponse,
+    JobProgressResponse,
+    JobStatus,
+    RoughCutJobResultResponse,
+)
 from src.transcribe import transcribe_clip
 from src.utils import load_config, load_env
 
@@ -202,6 +208,23 @@ class JobManager:
         self._pool.submit(self._run_caption_worker, job_id, params)
         return job_id
 
+    def create_rough_cut_job(self, params: dict[str, Any]) -> str:
+        job_id = uuid.uuid4().hex[:12]
+        rec = JobRecord(
+            job_id=job_id,
+            job_type="rough_cut",
+            params=params,
+            status=JobStatus.QUEUED,
+            pct=0,
+            step="Rough cut job queued",
+        )
+        with self._lock:
+            self._jobs[job_id] = rec
+
+        # Dispatch to background thread pool
+        self._pool.submit(self._run_rough_cut_worker, job_id, params)
+        return job_id
+
     def get_progress(self, job_id: str) -> Optional[JobProgressResponse]:
         with self._lock:
             rec = self._jobs.get(job_id)
@@ -213,6 +236,27 @@ class JobManager:
                 pct=rec.pct,
                 step=rec.step,
                 error=rec.error,
+            )
+
+    def get_rough_cut_result(self, job_id: str) -> Optional[RoughCutJobResultResponse]:
+        with self._lock:
+            rec = self._jobs.get(job_id)
+            if not rec:
+                return None
+            res = rec.result or {}
+            return RoughCutJobResultResponse(
+                job_id=rec.job_id,
+                status=rec.status,
+                cut_list_path=res.get("cut_list_path"),
+                xml_path=res.get("xml_path"),
+                report_path=res.get("report_path"),
+                original_duration=res.get("original_duration", 0.0),
+                final_duration=res.get("final_duration", 0.0),
+                duration_saved=res.get("duration_saved", 0.0),
+                reduction_pct=res.get("reduction_pct", 0.0),
+                cuts_count=res.get("cuts_count", 0),
+                qa_passed=res.get("qa_passed", True),
+                qa_summary=res.get("qa_summary"),
             )
 
     def get_result(self, job_id: str) -> Optional[CaptionJobResultResponse]:
@@ -502,4 +546,108 @@ class JobManager:
 
         except Exception as exc:
             logger.exception(f"[{job_id}] Caption job failed: {exc}")
+            self._set_failed(job_id, str(exc))
+
+    def _run_rough_cut_worker(self, job_id: str, params: dict[str, Any]) -> None:
+        """Background worker executing the Precision Rough Cut (Cut Engine v2) pipeline."""
+        logger.info(f"[{job_id}] Starting rough cut worker with params: {params}")
+        self._update_progress(job_id, 5, "Initializing Precision Cut Engine v2...")
+
+        try:
+            media_path = Path(params["media_path"])
+            if not media_path.exists():
+                raise FileNotFoundError(f"Media file not found on disk: {media_path}")
+
+            out_dir = self._jobs_dir / job_id
+            out_dir.mkdir(parents=True, exist_ok=True)
+
+            # 1. Transcribe speech if transcript is not supplied in params
+            self._update_progress(job_id, 15, "Transcribing speech and word timestamps...")
+            transcript = params.get("transcript")
+            if not transcript:
+                whisper_model = params.get("model") or "base"
+                logger.info(f"[{job_id}] Transcribing media with faster-whisper model={whisper_model}")
+                transcript = transcribe_clip(
+                    media_path,
+                    model=whisper_model,
+                    word_timestamps=True,
+                    cache_dir=self._cache_dir / "transcripts",
+                )
+
+            # 2. Build CutEngineConfig from preset and parameters
+            preset_name = params.get("preset") or "reel"
+            tighten = bool(params.get("tighten", False))
+            loosen = bool(params.get("loosen", False))
+            remove_fillers = bool(params.get("remove_fillers", True))
+            remove_retakes = bool(params.get("remove_retakes", True))
+            shorten_pauses = bool(params.get("shorten_pauses", True))
+
+            client_overrides: dict[str, Any] = {
+                "cut_engine": {
+                    "remove_fillers": remove_fillers,
+                    "remove_retakes": remove_retakes,
+                }
+            }
+            if not shorten_pauses:
+                client_overrides["cut_engine"]["min_silence_sec"] = 2.0
+                client_overrides["cut_engine"]["keep_gap_ms"] = 350.0
+
+            cfg = CutEngineConfig.from_dict(
+                preset=preset_name,
+                client_overrides=client_overrides,
+                tighten=tighten,
+                loosen=loosen,
+            )
+
+            # 3. Process precision rough cut
+            self._update_progress(job_id, 40, "Running Silero VAD & Adaptive Energy detection...")
+            engine = CutEngine(config=cfg, cache_dir=self._cache_dir / "cut_engine")
+
+            self._update_progress(job_id, 65, "Aligning word timestamps, detecting retakes & snapping...")
+            seq_name = params.get("sequence_name") or f"{media_path.stem} — StyleCut Rough Cut"
+
+            cut_result = engine.process(
+                video_path=media_path,
+                transcript=transcript,
+                output_dir=out_dir,
+                tighten=tighten,
+                loosen=loosen,
+                sequence_name=seq_name,
+            )
+
+            # 4. QA & Verification
+            self._update_progress(job_id, 92, "Running 7-point QA verification suite...")
+            cut_list = cut_result.cut_list
+
+            orig_dur = round(float(cut_list.get("total_original_duration_sec", 0.0)), 2)
+            cut_dur = round(float(cut_list.get("total_cut_duration_sec", 0.0)), 2)
+            saved_dur = round(float(cut_list.get("duration_saved_sec", 0.0)), 2)
+            red_pct = round(float(cut_list.get("reduction_percentage", 0.0)), 1)
+            cuts_cnt = int(cut_list.get("cuts_count", 0))
+
+            res_payload = {
+                "cut_list_path": str(cut_result.cut_list_path.resolve()),
+                "xml_path": str(cut_result.xml_path.resolve()),
+                "report_path": str(cut_result.report_path.resolve()),
+                "original_duration": orig_dur,
+                "final_duration": cut_dur,
+                "duration_saved": saved_dur,
+                "reduction_pct": red_pct,
+                "cuts_count": cuts_cnt,
+                "qa_passed": cut_result.qa_report.passed,
+                "qa_summary": cut_result.qa_report.to_dict(),
+            }
+
+            logger.info(
+                f"[{job_id}] Rough cut completed: {orig_dur}s -> {cut_dur}s ({cuts_cnt} cuts, {red_pct}% reduced)"
+            )
+            self._set_completed(job_id, res_payload)
+            self._update_progress(
+                job_id,
+                100,
+                f"Precision Rough Cut ready! {cuts_cnt} cuts ({saved_dur}s saved)",
+            )
+
+        except Exception as exc:
+            logger.exception(f"[{job_id}] Rough cut job failed: {exc}")
             self._set_failed(job_id, str(exc))

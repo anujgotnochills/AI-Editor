@@ -51,7 +51,17 @@
       Checking engine connection…
     </div>
 
-    <!-- ── Active Sequence Section ────────────────────────────── -->
+    <!-- ── Navigation Tabs ────────────────────────────────────── -->
+    <nav class="panel-nav" role="tablist">
+      <button type="button" class="nav-tab-btn active" id="tab-btn-rough-cut" data-tab="tab-pane-rough-cut">
+        <span class="nav-tab-icon">✂️</span> Rough Cut
+      </button>
+      <button type="button" class="nav-tab-btn" id="tab-btn-captions" data-tab="tab-pane-captions">
+        <span class="nav-tab-icon">💬</span> Captions
+      </button>
+    </nav>
+
+    <!-- ── Active Sequence Section (Shared) ───────────────────── -->
     <section class="card" aria-label="Sequence">
       <div class="card-title">Timeline & Media</div>
       <div class="chip-strip" id="seq-chips">
@@ -65,9 +75,129 @@
       </div>
     </section>
 
-    <!-- ── AI Captions Flow (Step 3) ──────────────────────────── -->
-    <section class="card" aria-label="Captions">
-      <div class="card-title">AI Caption Generator</div>
+    <!-- ── Global Progress Bar ────────────────────────────────── -->
+    <div id="progress-container" class="progress-container" style="margin: 0 2px;">
+      <div class="progress-label">
+        <span id="progress-step">Processing…</span>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div id="progress-fill" class="progress-bar-fill"></div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════
+         TAB PANE 1: ROUGH CUT (Cut Engine v2)
+         ════════════════════════════════════════════════════════════ -->
+    <div class="tab-pane active" id="tab-pane-rough-cut">
+      <section class="card" aria-label="Rough Cut Controls">
+        <div class="card-title">Precision Rough Cut (Cut Engine v2)</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:2px;">
+          Silero VAD • WhisperX Word Alignment • Retakes & Fillers • Audio Snapping
+        </div>
+
+        <!-- Preset -->
+        <div class="controls-row">
+          <label for="cut-preset-toggle" style="font-size:11px;color:var(--text-secondary);min-width:55px;">
+            Preset
+          </label>
+          <select id="cut-preset-toggle" aria-label="Cut engine preset">
+            <option value="reel" selected>⚡ Reel / Shorts (Ultra-punchy, 60ms gap)</option>
+            <option value="talking_head">🎯 Talking Head (Natural & balanced, 120ms gap)</option>
+            <option value="podcast">🎙️ Podcast (Relaxed pacing, 220ms gap)</option>
+            <option value="vlog">🎒 Vlog / Casual (Dynamic flow, 160ms gap)</option>
+          </select>
+        </div>
+
+        <!-- Pacing Adjustment -->
+        <div class="controls-row" style="align-items:flex-start;flex-direction:column;gap:4px;">
+          <span style="font-size:11px;color:var(--text-secondary);">Pacing Adjustment:</span>
+          <div class="segmented-control" id="cut-pacing-segmented">
+            <button type="button" class="segmented-btn" data-pacing="tighten">⚡ Tighten (-25%)</button>
+            <button type="button" class="segmented-btn active" data-pacing="normal">Standard</button>
+            <button type="button" class="segmented-btn" data-pacing="loosen">🍃 Loosen (+35%)</button>
+          </div>
+        </div>
+
+        <!-- Clean-up Switches -->
+        <div style="display:flex;flex-direction:column;gap:3px;margin:2px 0;">
+          <label class="checkbox-row">
+            <input type="checkbox" id="chk-remove-fillers" checked />
+            <span>Remove Filler Words (um, uh, yaani, matlab…)</span>
+          </label>
+          <label class="checkbox-row">
+            <input type="checkbox" id="chk-remove-retakes" checked />
+            <span>Remove Retakes & False Starts (keep best take)</span>
+          </label>
+          <label class="checkbox-row">
+            <input type="checkbox" id="chk-shorten-pauses" checked />
+            <span>Shorten Dead Air & Awkward Pauses</span>
+          </label>
+        </div>
+
+        <!-- Primary Action -->
+        <button id="btn-rough-cut" class="btn btn-primary btn-full" type="button" style="margin-top:4px;">
+          <span class="btn-icon">✂️</span> Generate Precision Rough Cut
+        </button>
+
+        <div style="margin-top:6px;padding:7px 9px;background:rgba(91,140,248,0.08);border-left:3px solid var(--accent);border-radius:4px;font-size:11px;color:var(--text-secondary);line-height:1.4;">
+          <span style="color:var(--accent);font-weight:600;">🎬 Automatic Timeline Sequence:</span><br/>
+          Generates frame-accurate rough cut, creates XML sequence, and imports directly into Premiere Pro with linked A/V & review markers!
+        </div>
+      </section>
+
+      <!-- Rough Cut Results (hidden until generated) -->
+      <section class="results-card" id="rough-cut-results" style="display:none;" aria-label="Rough Cut Results">
+        <div class="results-header">
+          <div class="duration-comparison">
+            <span id="cut-res-orig">0:00</span>
+            <span class="duration-arrow">➔</span>
+            <span id="cut-res-final" style="color:var(--ok-color);">0:00</span>
+          </div>
+          <span class="badge-cut" id="cut-res-pct">0% cut</span>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <div class="metric-val" id="cut-res-saved">0s</div>
+            <div class="metric-lbl">Time Saved</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-val" id="cut-res-count">0</div>
+            <div class="metric-lbl">Cuts Placed</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-val" id="cut-res-qa" style="color:var(--ok-color);">Passed ✓</div>
+            <div class="metric-lbl">QA Checks</div>
+          </div>
+        </div>
+
+        <div class="controls-row" style="margin-top:4px;">
+          <button id="btn-reimport-xml" class="btn btn-secondary" style="flex:1;" type="button">
+            <span class="btn-icon">🎬</span> Re-Import XML
+          </button>
+          <button id="btn-view-report" class="btn btn-ghost" style="flex:1;" type="button">
+            <span class="btn-icon">📄</span> View QA Report
+          </button>
+        </div>
+
+        <div id="report-drawer" style="display:none;margin-top:4px;">
+          <pre class="report-view" id="report-view-content"></pre>
+        </div>
+
+        <button id="btn-goto-captions" class="btn btn-primary btn-full" type="button" style="margin-top:4px;">
+          <span class="btn-icon">💬</span> Proceed to Captions (Step 2) ➔
+        </button>
+      </section>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════
+         TAB PANE 2: CAPTIONS (Remotion & Editor)
+         ════════════════════════════════════════════════════════════ -->
+    <div class="tab-pane" id="tab-pane-captions">
+      <!-- ── AI Captions Flow (Step 3) ──────────────────────────── -->
+      <section class="card" aria-label="Captions">
+        <div class="card-title">AI Caption Generator</div>
 
       <div class="controls-row">
         <label for="format-toggle" style="font-size:11px;color:var(--text-secondary);min-width:55px;">
@@ -141,17 +271,6 @@
         <span class="btn-icon">✨</span> Generate & Insert Captions
       </button>
 
-      <!-- Progress bar -->
-      <div id="progress-container" class="progress-container">
-        <div class="progress-label">
-          <span id="progress-step">Processing…</span>
-          <span id="progress-pct">0%</span>
-        </div>
-        <div class="progress-bar-bg">
-          <div id="progress-fill" class="progress-bar-fill"></div>
-        </div>
-      </div>
-
       <!-- Auto Graphic Badge -->
       <div style="margin-top:8px;padding:8px 10px;background:rgba(255,212,0,0.08);border-left:3px solid #ffd400;border-radius:4px;font-size:11px;color:var(--text-secondary);line-height:1.4;">
         <span style="color:#ffd400;font-weight:600;">⚡ 100% Automated Graphic Placement:</span><br/>
@@ -177,6 +296,7 @@
         </div>
       </div>
     </section>
+  </div><!-- /#tab-pane-captions -->
 
     <!-- ── Quick Tools ────────────────────────────────────────── -->
     <section class="card" aria-label="Tools">
