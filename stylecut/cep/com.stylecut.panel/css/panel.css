@@ -1,0 +1,304 @@
+/* =========================================================
+   StyleCut Panel — panel.css
+   Dark-themed to match Premiere Pro's dark UI
+   Uses CSS custom properties so they can be overridden
+   by the Premiere skin colour read in panel.js (--pp-bg).
+   ========================================================= */
+
+/* ── Google Font ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── Design tokens ── */
+:root {
+    --pp-bg:          #1e1e1e;      /* fallback; overridden by JS */
+    --surface:        #252526;
+    --surface-raised: #2d2d2d;
+    --border:         #3a3a3a;
+    --accent:         #5b8cf8;
+    --accent-hover:   #7aa4ff;
+    --accent-dim:     rgba(91,140,248,0.15);
+    --text-primary:   #e8e8e8;
+    --text-secondary: #9b9b9b;
+    --text-muted:     #5a5a5a;
+    --ok-color:       #4caf82;
+    --warn-color:     #f0a500;
+    --error-color:    #e05c5c;
+    --busy-color:     #5b8cf8;
+    --radius:         6px;
+    --radius-sm:      4px;
+    --font:           'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono:           'Consolas', 'Fira Mono', monospace;
+    --transition:     160ms ease;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+    height: 100%;
+    background: var(--pp-bg);
+    color: var(--text-primary);
+    font-family: var(--font);
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-x: hidden;
+}
+
+/* ── Layout ── */
+.panel-root {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 12px;
+    gap: 10px;
+}
+
+/* ── Header ── */
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-logo {
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+    background: linear-gradient(135deg, var(--accent) 0%, #b48ef8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.panel-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 0.3px;
+}
+
+.panel-version {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+}
+
+.btn-reload {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    padding: 2px 6px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.btn-reload:hover {
+    background: var(--surface-raised);
+    color: var(--text-primary);
+    border-color: var(--accent);
+}
+
+/* ── Card sections ── */
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.card-title {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+}
+
+/* ── Controls row ── */
+.controls-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+/* ── Select / Toggle ── */
+select {
+    background: var(--surface-raised);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 5px 8px;
+    font-family: var(--font);
+    font-size: 12px;
+    flex: 1;
+    outline: none;
+    cursor: pointer;
+    transition: border-color var(--transition);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239b9b9b'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 24px;
+}
+select:hover  { border-color: var(--accent); }
+select:focus  { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-dim); }
+
+/* ── Buttons ── */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 6px 12px;
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--transition), box-shadow var(--transition), transform var(--transition);
+    white-space: nowrap;
+    text-decoration: none;
+    user-select: none;
+}
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+    background: var(--accent);
+    color: #fff;
+}
+.btn-primary:hover { background: var(--accent-hover); box-shadow: 0 2px 8px rgba(91,140,248,0.35); }
+
+.btn-secondary {
+    background: var(--surface-raised);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+}
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+.btn-ghost:hover { color: var(--text-primary); border-color: var(--text-secondary); }
+
+.btn-full { width: 100%; }
+
+.btn-icon { font-size: 14px; }
+
+/* ── Status box ── */
+.status-box {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 7px 10px;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--border);
+    background: var(--surface-raised);
+    color: var(--text-secondary);
+    transition: all var(--transition);
+}
+.status-box.ok    { border-color: var(--ok-color);    color: var(--ok-color);    background: rgba(76,175,130,0.08); }
+.status-box.warn  { border-color: var(--warn-color);  color: var(--warn-color);  background: rgba(240,165,0,0.08); }
+.status-box.error { border-color: var(--error-color); color: var(--error-color); background: rgba(224,92,92,0.08); }
+.status-box.busy  { border-color: var(--busy-color);  color: var(--busy-color);  background: var(--accent-dim);
+                    animation: pulse 1.4s ease infinite; }
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.6; }
+}
+
+/* ── Log area ── */
+.log-area {
+    flex: 1;
+    background: #141414;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: #c5c8c6;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    line-height: 1.55;
+    padding: 8px;
+    resize: none;
+    outline: none;
+    min-height: 90px;
+}
+.log-area:focus { border-color: var(--accent); }
+
+/* ── Info chip strip ── */
+.chip-strip {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+.chip {
+    font-size: 10px;
+    font-family: var(--mono);
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid rgba(91,140,248,0.25);
+}
+
+/* ── Divider ── */
+.divider {
+    height: 1px;
+    background: var(--border);
+    margin: 2px 0;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar       { width: 5px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ── Progress bar ── */
+.progress-container {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 6px;
+}
+.progress-container.active {
+    display: flex;
+}
+.progress-bar-bg {
+    width: 100%;
+    height: 6px;
+    background: var(--surface-raised);
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+.progress-bar-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent) 0%, #b48ef8 100%);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-secondary);
+}

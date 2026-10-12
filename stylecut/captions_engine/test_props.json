@@ -1,0 +1,27 @@
+{
+  "templateId": "hook_gold",
+  "line": {
+    "id": "line_test",
+    "text": "Stop Making This Video Editing Mistake",
+    "lead": "Stop Making This",
+    "keyword": "MISTAKE",
+    "tail": "in Video Editing",
+    "start": 0.0,
+    "end": 2.0,
+    "duration": 2.0,
+    "words": [
+      {"word": "Stop", "start": 0.0, "end": 0.3},
+      {"word": "Making", "start": 0.3, "end": 0.6},
+      {"word": "This", "start": 0.6, "end": 0.8},
+      {"word": "MISTAKE", "start": 0.8, "end": 1.4, "highlight": true},
+      {"word": "in", "start": 1.4, "end": 1.6},
+      {"word": "Video", "start": 1.6, "end": 1.8},
+      {"word": "Editing", "start": 1.8, "end": 2.0}
+    ]
+  },
+  "canvas": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30
+  }
+}

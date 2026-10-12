@@ -1,0 +1,73 @@
+# ─────────────────────────────────────────────────────────────────
+# StyleCut — global configuration
+# All model names / paths / settings live here; zero hardcoding.
+# ─────────────────────────────────────────────────────────────────
+
+whisper:
+  model: small                    # multilingual model (supports Hindi, English, Hinglish)
+  device: cpu
+  compute_type: int8
+  fallback_model: base           # lightweight fallback on CPU
+  fallback_device: cpu
+  fallback_compute_type: int8
+  language: null                  # null = auto-detect (hi / en / etc.)
+  # Hinglish-biased prompt → steers Whisper vocabulary
+  initial_prompt: >
+    Yaar, sun na, yeh product kaafi achha hai aur price mein bhi full value
+    milti hai. Main aaj tumhe is amazing item ke baare mein bataunga. Let's go!
+
+llm:
+  provider: gemini                # gemini | ollama
+  model: gemini-flash-latest      # active Gemini model
+  max_retries: 3
+  backoff_sec: 5.0
+
+ffmpeg:
+  video_encoder: h264_nvenc       # NVENC GPU encoder (primary)
+  fallback_encoder: libx264       # CPU fallback
+  nvenc_preset: p4
+  nvenc_cq: 23
+  libx264_crf: 23
+  libx264_preset: fast
+  preview_resolution: "960x540"
+  final_resolution: "1080x1920"
+  fps: 30
+
+pacing:
+  remove_silence_over_sec: 0.25   # pauses longer than 0.25s get removed
+  padding_ms: 50                  # 50ms safety buffer before/after kept speech
+  fillers:                        # words cut out if detected as isolated pauses/fillers
+    - "um"
+    - "uh"
+    - "umm"
+    - "uhh"
+    - "matlab"
+    - "basically"
+    - "like"
+
+captions:
+  style: word_popup               # word_popup (word-by-word active sync) | karaoke
+  max_lines: 2                    # display up to 2 lines
+  words_per_line: 3               # words per line (e.g. 3 on line 1, 3 on line 2 = 6 max)
+  font: Montserrat ExtraBold
+  font_fallback: Arial Black
+  size: 72
+  position: lower_third           # lower_third | upper | middle
+  # ASS color format: &HAABBGGRR  (AA=00 → fully opaque)
+  highlight_color: "&H0000D4FF"   # #FFD400 yellow in ASS BGR
+  text_color:      "&H00FFFFFF"   # white
+  outline_color:   "&H00000000"   # black
+  outline_size: 4
+  shadow: 2
+  burn_in: true
+  hinglish_enabled: true
+
+assets:
+  luts_dir:       assets/luts
+  music_dir:      assets/music
+  sfx_dir:        assets/sfx
+  fonts_dir:      assets/fonts
+  broll_cache_dir: assets/broll_cache
+
+logging:
+  level: INFO

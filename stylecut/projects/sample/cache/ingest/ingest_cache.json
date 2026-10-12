@@ -1,0 +1,32 @@
+{
+  "0f445a53058984627d53f16c7c72b892": {
+    "path": "D:\\Personal Projects\\ai editor\\stylecut\\projects\\sample\\footage\\sample_clip.mp4",
+    "filename": "sample_clip.mp4",
+    "stem": "sample_clip",
+    "duration_sec": 25.0,
+    "width": 1080,
+    "height": 1920,
+    "fps": 30.0,
+    "orientation": "vertical",
+    "has_audio": true,
+    "audio_codec": "aac",
+    "video_codec": "h264",
+    "size_mb": 0.29,
+    "flags": []
+  },
+  "ef3a02f248fdbcb4f7dd05e9f04f4fa9": {
+    "path": "D:\\Personal Projects\\ai editor\\stylecut\\projects\\sample\\footage\\0924 (1)(4).mp4",
+    "filename": "0924 (1)(4).mp4",
+    "stem": "0924 (1)(4)",
+    "duration_sec": 66.571,
+    "width": 1080,
+    "height": 1920,
+    "fps": 60.0,
+    "orientation": "vertical",
+    "has_audio": true,
+    "audio_codec": "aac",
+    "video_codec": "h264",
+    "size_mb": 141.18,
+    "flags": []
+  }
+}

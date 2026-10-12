@@ -1,0 +1,63 @@
+{
+  "name": "instagram_product_review_reel",
+  "format": {
+    "aspect": "9:16",
+    "resolution": "1080x1920",
+    "max_duration_sec": 45,
+    "fps": 30
+  },
+  "pacing": {
+    "remove_silence_over_sec": 0.25,
+    "remove_fillers": ["um", "uh", "matlab", "basically", "like", "you know"],
+    "avg_shot_length_sec": 2.0,
+    "jump_cut_zoom": {
+      "enabled": true,
+      "scale": 1.12,
+      "alternate": true
+    },
+    "speed_up_speech": 1.05
+  },
+  "structure": {
+    "hook_first_3_sec": true,
+    "hook_strategy": "move strongest claim/line to the start",
+    "cta_at_end": "Follow for more reviews"
+  },
+  "broll": {
+    "frequency": "every_4_to_6_sec",
+    "max_duration_sec": 2.5,
+    "source": ["user_footage_first", "pexels"],
+    "overlay_mode": "full_cutaway"
+  },
+  "sfx": {
+    "on_cut": "whoosh_soft",
+    "on_price_or_number": "pop",
+    "on_hook": "impact",
+    "volume": 0.5
+  },
+  "music": {
+    "mood": "upbeat_trendy",
+    "volume": 0.10,
+    "duck_under_speech": true
+  },
+  "color": {
+    "lut": "bright_clean.cube",
+    "intensity": 0.8,
+    "auto_exposure_fix": true
+  },
+  "captions": {
+    "languages": ["hinglish"],
+    "font": "Montserrat ExtraBold",
+    "size": 72,
+    "position": "lower_third",
+    "words_per_line": 3,
+    "highlight_current_word": true,
+    "highlight_color": "#FFD400",
+    "emoji_auto": true,
+    "burn_in": true
+  },
+  "extras": {
+    "product_text_overlays": true,
+    "price_tag_animation": true,
+    "zoom_on_emphasis_words": true
+  }
+}

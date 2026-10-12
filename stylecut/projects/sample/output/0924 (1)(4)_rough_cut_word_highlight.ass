@@ -1,0 +1,59 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Montserrat ExtraBold,72,&H00FFFFFF,&H0000D4FF,&H00000000,&HA0000000,-1,0,0,0,100,100,1,0,1,4,2,2,40,40,180,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:00.42,Default,,0,0,0,,{\c&H0000D4FF&\fscx106\fscy106}main{\fscx100\fscy100}
+Dialogue: 0,0:00:00.42,0:00:00.58,Default,,0,0,0,,{\c&H00FFFFFF&}main {\c&H0000D4FF&\fscx106\fscy106}gar{\fscx100\fscy100}
+Dialogue: 0,0:00:00.58,0:00:00.72,Default,,0,0,0,,{\c&H00FFFFFF&}main {\c&H00FFFFFF&}gar {\c&H0000D4FF&\fscx106\fscy106}se{\fscx100\fscy100}
+Dialogue: 0,0:00:00.72,0:00:00.92,Default,,0,0,0,,{\c&H00FFFFFF&}main {\c&H00FFFFFF&}gar {\c&H00FFFFFF&}se\N{\c&H0000D4FF&\fscx106\fscy106}fresh{\fscx100\fscy100}
+Dialogue: 0,0:00:00.92,0:00:01.26,Default,,0,0,0,,{\c&H00FFFFFF&}main {\c&H00FFFFFF&}gar {\c&H00FFFFFF&}se\N{\c&H00FFFFFF&}fresh {\c&H0000D4FF&\fscx106\fscy106}skin{\fscx100\fscy100}
+Dialogue: 0,0:00:01.26,0:00:01.77,Default,,0,0,0,,{\c&H00FFFFFF&}main {\c&H00FFFFFF&}gar {\c&H00FFFFFF&}se\N{\c&H00FFFFFF&}fresh {\c&H00FFFFFF&}skin {\c&H0000D4FF&\fscx106\fscy106}ke{\fscx100\fscy100}
+Dialogue: 0,0:00:01.42,0:00:01.64,Default,,0,0,0,,{\c&H0000D4FF&\fscx106\fscy106}saath{\fscx100\fscy100}
+Dialogue: 0,0:00:01.64,0:00:02.10,Default,,0,0,0,,{\c&H00FFFFFF&}saath {\c&H0000D4FF&\fscx106\fscy106}nikalti{\fscx100\fscy100}
+Dialogue: 0,0:00:02.10,0:00:02.24,Default,,0,0,0,,{\c&H00FFFFFF&}saath {\c&H00FFFFFF&}nikalti {\c&H0000D4FF&\fscx106\fscy106}hoon{\fscx100\fscy100}
+Dialogue: 0,0:00:02.24,0:00:02.68,Default,,0,0,0,,{\c&H00FFFFFF&}saath {\c&H00FFFFFF&}nikalti {\c&H00FFFFFF&}hoon\N{\c&H0000D4FF&\fscx106\fscy106}toh{\fscx100\fscy100}
+Dialogue: 0,0:00:02.68,0:00:03.10,Default,,0,0,0,,{\c&H00FFFFFF&}saath {\c&H00FFFFFF&}nikalti {\c&H00FFFFFF&}hoon\N{\c&H00FFFFFF&}toh {\c&H0000D4FF&\fscx106\fscy106}litar,{\fscx100\fscy100}
+Dialogue: 0,0:00:03.10,0:00:03.67,Default,,0,0,0,,{\c&H00FFFFFF&}saath {\c&H00FFFFFF&}nikalti {\c&H00FFFFFF&}hoon\N{\c&H00FFFFFF&}toh {\c&H00FFFFFF&}litar, {\c&H0000D4FF&\fscx106\fscy106}paani,{\fscx100\fscy100}
+Dialogue: 0,0:00:03.42,0:00:03.64,Default,,0,0,0,,{\c&H0000D4FF&\fscx106\fscy106}healthy{\fscx100\fscy100}
+Dialogue: 0,0:00:03.64,0:00:04.00,Default,,0,0,0,,{\c&H00FFFFFF&}healthy {\c&H0000D4FF&\fscx106\fscy106}khaana{\fscx100\fscy100}
+Dialogue: 0,0:00:04.00,0:00:04.62,Default,,0,0,0,,{\c&H00FFFFFF&}healthy {\c&H00FFFFFF&}khaana {\c&H0000D4FF&\fscx106\fscy106}sab{\fscx100\fscy100}
+Dialogue: 0,0:00:04.62,0:00:04.74,Default,,0,0,0,,{\c&H00FFFFFF&}healthy {\c&H00FFFFFF&}khaana {\c&H00FFFFFF&}sab\N{\c&H0000D4FF&\fscx106\fscy106}ka{\fscx100\fscy100}
+Dialogue: 0,0:00:04.74,0:00:04.98,Default,,0,0,0,,{\c&H00FFFFFF&}healthy {\c&H00FFFFFF&}khaana {\c&H00FFFFFF&}sab\N{\c&H00FFFFFF&}ka {\c&H0000D4FF&\fscx106\fscy106}dhyan{\fscx100\fscy100}
+Dialogue: 0,0:00:04.98,0:00:05.69,Default,,0,0,0,,{\c&H00FFFFFF&}healthy {\c&H00FFFFFF&}khaana {\c&H00FFFFFF&}sab\N{\c&H00FFFFFF&}ka {\c&H00FFFFFF&}dhyan {\c&H0000D4FF&\fscx106\fscy106}rakatee{\fscx100\fscy100}
+Dialogue: 0,0:00:05.34,0:00:05.72,Default,,0,0,0,,{\c&H0000D4FF&\fscx106\fscy106}hoon{\fscx100\fscy100}
+Dialogue: 0,0:00:05.72,0:00:06.02,Default,,0,0,0,,{\c&H00FFFFFF&}hoon {\c&H0000D4FF&\fscx106\fscy106}phir{\fscx100\fscy100}
+Dialogue: 0,0:00:06.02,0:00:06.16,Default,,0,0,0,,{\c&H00FFFFFF&}hoon {\c&H00FFFFFF&}phir {\c&H0000D4FF&\fscx106\fscy106}bhi{\fscx100\fscy100}
+Dialogue: 0,0:00:06.16,0:00:06.60,Default,,0,0,0,,{\c&H00FFFFFF&}hoon {\c&H00FFFFFF&}phir {\c&H00FFFFFF&}bhi\N{\c&H0000D4FF&\fscx106\fscy106}pata nahi{\fscx100\fscy100}
+Dialogue: 0,0:00:06.60,0:00:07.22,Default,,0,0,0,,{\c&H00FFFFFF&}hoon {\c&H00FFFFFF&}phir {\c&H00FFFFFF&}bhi\N{\c&H00FFFFFF&}pata nahi {\c&H0000D4FF&\fscx106\fscy106}kyoo।{\fscx100\fscy100}
+Dialogue: 0,0:00:07.22,0:00:07.85,Default,,0,0,0,,{\c&H00FFFFFF&}hoon {\c&H00FFFFFF&}phir {\c&H00FFFFFF&}bhi\N{\c&H00FFFFFF&}pata nahi {\c&H00FFFFFF&}kyoo। {\c&H0000D4FF&\fscx106\fscy106}chhen{\fscx100\fscy100}
+Dialogue: 0,0:00:07.50,0:00:07.74,Default,,0,0,0,,{\c&H0000D4FF&\fscx106\fscy106}baje{\fscx100\fscy100}
+Dialogue: 0,0:00:07.74,0:00:07.86,Default,,0,0,0,,{\c&H00FFFFFF&}baje {\c&H0000D4FF&\fscx106\fscy106}ke{\fscx100\fscy100}
+Dialogue: 0,0:00:07.86,0:00:08.06,Default,,0,0,0,,{\c&H00FFFFFF&}baje {\c&H00FFFFFF&}ke {\c&H0000D4FF&\fscx106\fscy106}baad{\fscx100\fscy100}
+Dialogue: 0,0:00:08.06,0:00:08.28,Default,,0,0,0,,{\c&H00FFFFFF&}baje {\c&H00FFFFFF&}ke {\c&H00FFFFFF&}baad\N{\c&H0000D4FF&\fscx106\fscy106}mera{\fscx100\fscy100}
+Dialogue: 0,0:00:08.28,0:00:08.52,Default,,0,0,0,,{\c&H00FFFFFF&}baje {\c&H00FFFFFF&}ke {\c&H00FFFFFF&}baad\N{\c&H00FFFFFF&}mera {\c&H0000D4FF&\fscx106\fscy106}fes{\fscx100\fscy100}
+Dialogue: 0,0:00:08.52,0:00:09.17,Default,,0,0,0,,{\c&H00FFFFFF&}baje {\c&H00FFFFFF&}ke {\c&H00FFFFFF&}baad\N{\c&H00FFFFFF&}mera {\c&H00FFFFFF&}fes {\c&H0000D4FF&\fscx106\fscy106}aaze{\fscx100\fscy100}
+Dialogue: 0,0:00:08.82,0:00:09.08,Default,,0,0,0,,{\c&H0000D4FF&\fscx106\fscy106}lagne{\fscx100\fscy100}
+Dialogue: 0,0:00:09.08,0:00:09.20,Default,,0,0,0,,{\c&H00FFFFFF&}lagne {\c&H0000D4FF&\fscx106\fscy106}lagne{\fscx100\fscy100}
+Dialogue: 0,0:00:09.20,0:00:09.36,Default,,0,0,0,,{\c&H00FFFFFF&}lagne {\c&H00FFFFFF&}lagne {\c&H0000D4FF&\fscx106\fscy106}lagta{\fscx100\fscy100}
+Dialogue: 0,0:00:09.36,0:00:09.42,Default,,0,0,0,,{\c&H00FFFFFF&}lagne {\c&H00FFFFFF&}lagne {\c&H00FFFFFF&}lagta\N{\c&H0000D4FF&\fscx106\fscy106}hai{\fscx100\fscy100}
+Dialogue: 0,0:00:09.42,0:00:09.64,Default,,0,0,0,,{\c&H00FFFFFF&}lagne {\c&H00FFFFFF&}lagne {\c&H00FFFFFF&}lagta\N{\c&H00FFFFFF&}hai {\c&H0000D4FF&\fscx106\fscy106}zase{\fscx100\fscy100}
+Dialogue: 0,0:00:09.64,0:00:10.33,Default,,0,0,0,,{\c&H00FFFFFF&}lagne {\c&H00FFFFFF&}lagne {\c&H00FFFFFF&}lagta\N{\c&H00FFFFFF&}hai {\c&H00FFFFFF&}zase {\c&H0000D4FF&\fscx106\fscy106}mano{\fscx100\fscy100}
+Dialogue: 0,0:00:09.98,0:00:10.28,Default,,0,0,0,,{\c&H0000D4FF&\fscx106\fscy106}mere{\fscx100\fscy100}
+Dialogue: 0,0:00:10.28,0:00:10.50,Default,,0,0,0,,{\c&H00FFFFFF&}mere {\c&H0000D4FF&\fscx106\fscy106}saath{\fscx100\fscy100}
+Dialogue: 0,0:00:10.50,0:00:10.70,Default,,0,0,0,,{\c&H00FFFFFF&}mere {\c&H00FFFFFF&}saath {\c&H0000D4FF&\fscx106\fscy106}mera{\fscx100\fscy100}
+Dialogue: 0,0:00:10.70,0:00:10.98,Default,,0,0,0,,{\c&H00FFFFFF&}mere {\c&H00FFFFFF&}saath {\c&H00FFFFFF&}mera\N{\c&H0000D4FF&\fscx106\fscy106}fes{\fscx100\fscy100}
+Dialogue: 0,0:00:10.98,0:00:11.08,Default,,0,0,0,,{\c&H00FFFFFF&}mere {\c&H00FFFFFF&}saath {\c&H00FFFFFF&}mera\N{\c&H00FFFFFF&}fes {\c&H0000D4FF&\fscx106\fscy106}bhi{\fscx100\fscy100}
+Dialogue: 0,0:00:11.08,0:00:11.67,Default,,0,0,0,,{\c&H00FFFFFF&}mere {\c&H00FFFFFF&}saath {\c&H00FFFFFF&}mera\N{\c&H00FFFFFF&}fes {\c&H00FFFFFF&}bhi {\c&H0000D4FF&\fscx106\fscy106}baahar{\fscx100\fscy100}
+Dialogue: 0,0:00:11.32,0:00:11.56,Default,,0,0,0,,{\c&H0000D4FF&\fscx106\fscy106}goom{\fscx100\fscy100}
+Dialogue: 0,0:00:11.56,0:00:11.74,Default,,0,0,0,,{\c&H00FFFFFF&}goom {\c&H0000D4FF&\fscx106\fscy106}ki{\fscx100\fscy100}
+Dialogue: 0,0:00:11.74,0:00:11.92,Default,,0,0,0,,{\c&H00FFFFFF&}goom {\c&H00FFFFFF&}ki {\c&H0000D4FF&\fscx106\fscy106}aaya{\fscx100\fscy100}
+Dialogue: 0,0:00:11.92,0:00:12.53,Default,,0,0,0,,{\c&H00FFFFFF&}goom {\c&H00FFFFFF&}ki {\c&H00FFFFFF&}aaya\N{\c&H0000D4FF&\fscx106\fscy106}hoon{\fscx100\fscy100}

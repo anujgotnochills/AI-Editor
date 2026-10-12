@@ -1,0 +1,244 @@
+2026-10-11 19:31:42,160 [INFO    ] stylecut: StyleCut  |  project: sample
+2026-10-11 19:31:42,179 [INFO    ] stylecut: ─── Step 1/4: Ingest ───────────────────────────────────────────
+2026-10-11 19:31:42,180 [INFO    ] src.ingest: [ingest] Probing:    sample_clip.mp4
+2026-10-11 19:31:42,228 [INFO    ] src.ingest: [ingest] Found 1 clip(s) in D:\Personal Projects\ai editor\stylecut\projects\sample\footage
+2026-10-11 19:31:42,228 [INFO    ] stylecut: Clip                           Duration   Resolution    FPS  Flags
+2026-10-11 19:31:42,228 [INFO    ] stylecut: ------------------------------------------------------------------------
+2026-10-11 19:31:42,228 [INFO    ] stylecut: sample_clip.mp4                   25.0s    1080x1920 30.00  OK
+2026-10-11 19:31:42,228 [INFO    ] stylecut: ─── Step 2/4: Transcribe ───────────────────────────────────────
+2026-10-11 19:31:42,229 [INFO    ] src.transcribe: [transcribe] Loading distil-large-v3 on cuda…
+2026-10-11 19:31:47,874 [INFO    ] httpx: HTTP Request: GET https://huggingface.co/api/agent-harnesses "HTTP/1.1 200 OK"
+2026-10-11 19:31:48,156 [INFO    ] httpx: HTTP Request: GET https://huggingface.co/api/models/Systran/faster-distil-whisper-large-v3/revision/main "HTTP/1.1 200 OK"
+2026-10-11 19:31:48,414 [INFO    ] httpx: HTTP Request: GET https://huggingface.co/api/models/Systran/faster-distil-whisper-large-v3/tree/c3058b475261292e64a0412df1d2681c06260fab?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-10-11 19:31:48,672 [INFO    ] httpx: HTTP Request: HEAD https://huggingface.co/Systran/faster-distil-whisper-large-v3/resolve/c3058b475261292e64a0412df1d2681c06260fab/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-10-11 19:31:48,672 [WARNING ] huggingface_hub.utils._http: Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-10-11 19:31:48,687 [INFO    ] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Systran/faster-distil-whisper-large-v3/c3058b475261292e64a0412df1d2681c06260fab/config.json "HTTP/1.1 200 OK"
+2026-10-11 19:31:48,707 [INFO    ] httpx: HTTP Request: GET https://huggingface.co/api/resolve-cache/models/Systran/faster-distil-whisper-large-v3/c3058b475261292e64a0412df1d2681c06260fab/config.json "HTTP/1.1 200 OK"
+2026-10-11 19:31:48,713 [INFO    ] httpx: HTTP Request: HEAD https://huggingface.co/Systran/faster-distil-whisper-large-v3/resolve/c3058b475261292e64a0412df1d2681c06260fab/vocabulary.json "HTTP/1.1 307 Temporary Redirect"
+2026-10-11 19:31:48,727 [INFO    ] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Systran/faster-distil-whisper-large-v3/c3058b475261292e64a0412df1d2681c06260fab/vocabulary.json "HTTP/1.1 200 OK"
+2026-10-11 19:31:48,742 [INFO    ] httpx: HTTP Request: GET https://huggingface.co/api/resolve-cache/models/Systran/faster-distil-whisper-large-v3/c3058b475261292e64a0412df1d2681c06260fab/vocabulary.json "HTTP/1.1 200 OK"
+2026-10-11 19:31:49,696 [INFO    ] httpx: HTTP Request: HEAD https://huggingface.co/Systran/faster-distil-whisper-large-v3/resolve/c3058b475261292e64a0412df1d2681c06260fab/tokenizer.json "HTTP/1.1 307 Temporary Redirect"
+2026-10-11 19:31:49,713 [INFO    ] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Systran/faster-distil-whisper-large-v3/c3058b475261292e64a0412df1d2681c06260fab/tokenizer.json "HTTP/1.1 200 OK"
+2026-10-11 19:31:49,733 [INFO    ] httpx: HTTP Request: GET https://huggingface.co/api/resolve-cache/models/Systran/faster-distil-whisper-large-v3/c3058b475261292e64a0412df1d2681c06260fab/tokenizer.json "HTTP/1.1 200 OK"
+2026-10-11 19:31:50,768 [INFO    ] httpx: HTTP Request: HEAD https://huggingface.co/Systran/faster-distil-whisper-large-v3/resolve/c3058b475261292e64a0412df1d2681c06260fab/preprocessor_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-10-11 19:31:50,785 [INFO    ] httpx: HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/Systran/faster-distil-whisper-large-v3/c3058b475261292e64a0412df1d2681c06260fab/preprocessor_config.json "HTTP/1.1 200 OK"
+2026-10-11 19:31:50,803 [INFO    ] httpx: HTTP Request: GET https://huggingface.co/api/resolve-cache/models/Systran/faster-distil-whisper-large-v3/c3058b475261292e64a0412df1d2681c06260fab/preprocessor_config.json "HTTP/1.1 200 OK"
+2026-10-11 19:33:52,211 [INFO    ] src.transcribe: [transcribe] Transcribing sample_clip.mp4 [cuda]…
+2026-10-11 19:35:02,823 [INFO    ] stylecut: StyleCut  |  project: sample
+2026-10-11 19:35:02,902 [INFO    ] stylecut: ─── Step 1/4: Ingest ───────────────────────────────────────────
+2026-10-11 19:35:02,903 [INFO    ] src.ingest: [ingest] Found 1 clip(s) in D:\Personal Projects\ai editor\stylecut\projects\sample\footage
+2026-10-11 19:35:02,903 [INFO    ] stylecut: Clip                           Duration   Resolution    FPS  Flags
+2026-10-11 19:35:02,903 [INFO    ] stylecut: ------------------------------------------------------------------------
+2026-10-11 19:35:02,903 [INFO    ] stylecut: sample_clip.mp4                   25.0s    1080x1920 30.00  OK
+2026-10-11 19:35:02,903 [INFO    ] stylecut: ─── Step 2/4: Transcribe ───────────────────────────────────────
+2026-10-11 19:35:02,904 [INFO    ] src.transcribe: [transcribe] Loading distil-large-v3 on cuda…
+2026-10-11 19:35:03,918 [INFO    ] httpx: HTTP Request: GET https://huggingface.co/api/models/Systran/faster-distil-whisper-large-v3/revision/main "HTTP/1.1 200 OK"
+2026-10-11 19:35:08,627 [INFO    ] src.transcribe: [transcribe] Transcribing sample_clip.mp4 [cuda]…
+2026-10-11 19:35:08,704 [INFO    ] faster_whisper: Processing audio with duration 00:25.000
+2026-10-11 19:35:09,023 [INFO    ] faster_whisper: VAD filter removed 00:25.000 of audio
+2026-10-11 19:37:34,246 [INFO    ] stylecut: StyleCut  |  project: sample
+2026-10-11 19:37:34,347 [INFO    ] stylecut: ─── Step 1/4: Ingest ───────────────────────────────────────────
+2026-10-11 19:37:34,349 [INFO    ] src.ingest: [ingest] Found 1 clip(s) in D:\Personal Projects\ai editor\stylecut\projects\sample\footage
+2026-10-11 19:37:34,349 [INFO    ] stylecut: Clip                           Duration   Resolution    FPS  Flags
+2026-10-11 19:37:34,349 [INFO    ] stylecut: ------------------------------------------------------------------------
+2026-10-11 19:37:34,349 [INFO    ] stylecut: sample_clip.mp4                   25.0s    1080x1920 30.00  OK
+2026-10-11 19:37:34,349 [INFO    ] stylecut: ─── Step 2/4: Transcribe ───────────────────────────────────────
+2026-10-11 19:37:34,350 [INFO    ] src.transcribe: [transcribe] Loading distil-large-v3 on cuda…
+2026-10-11 19:37:35,434 [INFO    ] httpx: HTTP Request: GET https://huggingface.co/api/models/Systran/faster-distil-whisper-large-v3/revision/main "HTTP/1.1 200 OK"
+2026-10-11 19:37:40,156 [INFO    ] src.transcribe: [transcribe] Transcribing sample_clip.mp4 [cuda]…
+2026-10-11 19:37:40,237 [INFO    ] faster_whisper: Processing audio with duration 00:25.000
+2026-10-11 19:37:40,454 [INFO    ] faster_whisper: VAD filter removed 00:25.000 of audio
+2026-10-11 19:37:42,247 [WARNING ] src.transcribe: [transcribe] distil-large-v3/cuda failed (RuntimeError: Library cublas64_12.dll is not found or cannot be loaded). Falling back to distil-large-v3/cpu.
+2026-10-11 19:37:42,247 [INFO    ] src.transcribe: [transcribe] Loading distil-large-v3 on cpu…
+2026-10-11 19:37:42,549 [INFO    ] httpx: HTTP Request: GET https://huggingface.co/api/models/Systran/faster-distil-whisper-large-v3/revision/main "HTTP/1.1 200 OK"
+2026-10-11 19:37:45,340 [INFO    ] src.transcribe: [transcribe] Transcribing sample_clip.mp4 [cpu]…
+2026-10-11 19:37:45,423 [INFO    ] faster_whisper: Processing audio with duration 00:25.000
+2026-10-11 19:37:45,459 [INFO    ] faster_whisper: VAD filter removed 00:25.000 of audio
+2026-10-11 19:37:51,089 [INFO    ] faster_whisper: Detected language 'en' with probability 0.86
+2026-10-11 19:37:51,195 [INFO    ] src.transcribe: [transcribe] Done: 0 segments, 0 words, lang=en (86%)
+2026-10-11 19:37:51,195 [INFO    ] stylecut: ─── Step 3/4: Hinglish + Captions ─────────────────────────────
+2026-10-11 19:37:55,525 [INFO    ] stylecut:   Processing: sample_clip.mp4
+2026-10-11 19:37:55,526 [INFO    ] src.captions: [captions] SRT  → sample_clip_en.srt  (0 lines)
+2026-10-11 19:37:55,526 [INFO    ] src.captions: [captions] SRT  → sample_clip_hinglish.srt  (0 lines)
+2026-10-11 19:37:55,529 [INFO    ] src.captions: [captions] ASS  → sample_clip_word_highlight.ass  (0 dialogue lines)
+2026-10-11 19:37:55,529 [INFO    ] src.captions: [captions] FFmpeg burn (h264_nvenc)
+2026-10-11 19:37:58,071 [INFO    ] src.captions: [captions] MP4  → sample_clip_captioned.mp4
+2026-10-11 19:37:58,071 [INFO    ] stylecut: ─── Step 4/4: Finalise ─────────────────────────────────────────
+2026-10-11 19:37:58,075 [INFO    ] stylecut: ✅  Done.  Outputs in: D:\Personal Projects\ai editor\stylecut\projects\sample\output
+2026-10-11 19:37:58,075 [INFO    ] stylecut:    captions_en.srt
+2026-10-11 19:37:58,075 [INFO    ] stylecut:    captions_hinglish.srt
+2026-10-11 19:37:58,075 [INFO    ] stylecut:    captions_word_highlight.ass
+2026-10-11 19:37:58,075 [INFO    ] stylecut:    final_captioned.mp4
+2026-10-11 19:37:58,075 [INFO    ] stylecut:    sample_clip_captioned.mp4
+2026-10-11 19:37:58,075 [INFO    ] stylecut:    sample_clip_en.srt
+2026-10-11 19:37:58,075 [INFO    ] stylecut:    sample_clip_hinglish.srt
+2026-10-11 19:37:58,075 [INFO    ] stylecut:    sample_clip_word_highlight.ass
+2026-10-11 19:47:09,083 [INFO    ] stylecut: StyleCut  |  project: sample
+2026-10-11 19:47:11,376 [INFO    ] stylecut: ─── Step 1/4: Ingest ───────────────────────────────────────────
+2026-10-11 19:47:11,380 [INFO    ] src.ingest: [ingest] Probing:    0924 (1)(4).mp4
+2026-10-11 19:47:12,283 [INFO    ] src.ingest: [ingest] Found 1 clip(s) in D:\Personal Projects\ai editor\stylecut\projects\sample\footage
+2026-10-11 19:47:12,283 [INFO    ] stylecut: Clip                           Duration   Resolution    FPS  Flags
+2026-10-11 19:47:12,283 [INFO    ] stylecut: ------------------------------------------------------------------------
+2026-10-11 19:47:12,283 [INFO    ] stylecut: 0924 (1)(4).mp4                   66.6s    1080x1920 60.00  OK
+2026-10-11 19:47:12,284 [INFO    ] stylecut: ─── Step 2/4: Transcribe ───────────────────────────────────────
+2026-10-11 19:47:12,284 [INFO    ] src.transcribe: [transcribe] Loading distil-large-v3 on cuda…
+2026-10-11 19:47:19,862 [INFO    ] httpx: HTTP Request: GET https://huggingface.co/api/models/Systran/faster-distil-whisper-large-v3/revision/main "HTTP/1.1 200 OK"
+2026-10-11 19:47:25,312 [INFO    ] src.transcribe: [transcribe] Transcribing 0924 (1)(4).mp4 [cuda]…
+2026-10-11 19:47:26,174 [INFO    ] faster_whisper: Processing audio with duration 01:06.571
+2026-10-11 19:47:26,506 [INFO    ] faster_whisper: VAD filter removed 00:00.000 of audio
+2026-10-11 19:47:35,915 [WARNING ] src.transcribe: [transcribe] distil-large-v3/cuda failed (RuntimeError: Library cublas64_12.dll is not found or cannot be loaded). Falling back to distil-large-v3/cpu.
+2026-10-11 19:47:35,916 [INFO    ] src.transcribe: [transcribe] Loading distil-large-v3 on cpu…
+2026-10-11 19:47:36,174 [INFO    ] httpx: HTTP Request: GET https://huggingface.co/api/models/Systran/faster-distil-whisper-large-v3/revision/main "HTTP/1.1 200 OK"
+2026-10-11 19:47:38,792 [INFO    ] src.transcribe: [transcribe] Transcribing 0924 (1)(4).mp4 [cpu]…
+2026-10-11 19:47:39,654 [INFO    ] faster_whisper: Processing audio with duration 01:06.571
+2026-10-11 19:47:39,750 [INFO    ] faster_whisper: VAD filter removed 00:00.000 of audio
+2026-10-11 19:47:45,259 [INFO    ] faster_whisper: Detected language 'en' with probability 0.94
+2026-10-11 19:48:05,624 [INFO    ] src.transcribe: [transcribe] Done: 42 segments, 148 words, lang=en (94%)
+2026-10-11 19:48:05,624 [INFO    ] stylecut: ─── Step 3/4: Hinglish + Captions ─────────────────────────────
+2026-10-11 19:48:08,691 [INFO    ] stylecut:   Processing: 0924 (1)(4).mp4
+2026-10-11 19:48:08,694 [INFO    ] src.captions: [captions] SRT  → 0924 (1)(4)_en.srt  (50 lines)
+2026-10-11 19:48:08,695 [INFO    ] src.captions: [captions] SRT  → 0924 (1)(4)_hinglish.srt  (50 lines)
+2026-10-11 19:48:08,696 [INFO    ] src.captions: [captions] ASS  → 0924 (1)(4)_word_highlight.ass  (50 dialogue lines)
+2026-10-11 19:48:08,697 [INFO    ] src.captions: [captions] FFmpeg burn (h264_nvenc)
+2026-10-11 19:48:17,336 [INFO    ] src.captions: [captions] MP4  → 0924 (1)(4)_captioned.mp4
+2026-10-11 19:48:17,336 [INFO    ] stylecut: ─── Step 4/4: Finalise ─────────────────────────────────────────
+2026-10-11 19:48:17,337 [INFO    ] stylecut: ✅  Done.  Outputs in: D:\Personal Projects\ai editor\stylecut\projects\sample\output
+2026-10-11 19:48:17,337 [INFO    ] stylecut:    0924 (1)(4)_captioned.mp4
+2026-10-11 19:48:17,337 [INFO    ] stylecut:    0924 (1)(4)_en.srt
+2026-10-11 19:48:17,337 [INFO    ] stylecut:    0924 (1)(4)_hinglish.srt
+2026-10-11 19:48:17,337 [INFO    ] stylecut:    0924 (1)(4)_word_highlight.ass
+2026-10-11 19:48:17,337 [INFO    ] stylecut:    captions_en.srt
+2026-10-11 19:48:17,337 [INFO    ] stylecut:    captions_hinglish.srt
+2026-10-11 19:48:17,337 [INFO    ] stylecut:    captions_word_highlight.ass
+2026-10-11 19:48:17,338 [INFO    ] stylecut:    final_captioned.mp4
+2026-10-11 19:48:17,338 [INFO    ] stylecut:    sample_clip_captioned.mp4
+2026-10-11 19:48:17,338 [INFO    ] stylecut:    sample_clip_en.srt
+2026-10-11 19:48:17,338 [INFO    ] stylecut:    sample_clip_hinglish.srt
+2026-10-11 19:48:17,338 [INFO    ] stylecut:    sample_clip_word_highlight.ass
+2026-10-11 20:06:38,571 [INFO    ] stylecut: StyleCut  |  project: sample
+2026-10-11 20:06:38,648 [INFO    ] stylecut: ─── Step 1/4: Ingest ───────────────────────────────────────────
+2026-10-11 20:06:38,649 [INFO    ] src.ingest: [ingest] Found 1 clip(s) in D:\Personal Projects\ai editor\stylecut\projects\sample\footage
+2026-10-11 20:06:38,649 [INFO    ] stylecut: Clip                           Duration   Resolution    FPS  Flags
+2026-10-11 20:06:38,649 [INFO    ] stylecut: ------------------------------------------------------------------------
+2026-10-11 20:06:38,649 [INFO    ] stylecut: 0924 (1)(4).mp4                   66.6s    1080x1920 60.00  OK
+2026-10-11 20:06:38,649 [INFO    ] stylecut: ─── Step 2/4: Transcribe ───────────────────────────────────────
+2026-10-11 20:06:38,649 [INFO    ] src.transcribe: [transcribe] Loading small on cuda…
+2026-10-11 20:06:39,531 [INFO    ] httpx: HTTP Request: GET https://huggingface.co/api/models/Systran/faster-whisper-small/revision/main "HTTP/1.1 200 OK"
+2026-10-11 20:06:42,419 [INFO    ] src.transcribe: [transcribe] Transcribing 0924 (1)(4).mp4 [cuda]…
+2026-10-11 20:06:42,605 [INFO    ] faster_whisper: Processing audio with duration 01:06.571
+2026-10-11 20:06:42,828 [INFO    ] faster_whisper: VAD filter removed 00:00.000 of audio
+2026-10-11 20:06:44,233 [WARNING ] src.transcribe: [transcribe] small/cuda failed (RuntimeError: Library cublas64_12.dll is not found or cannot be loaded). Falling back to small/cpu.
+2026-10-11 20:06:44,233 [INFO    ] src.transcribe: [transcribe] Loading small on cpu…
+2026-10-11 20:06:44,481 [INFO    ] httpx: HTTP Request: GET https://huggingface.co/api/models/Systran/faster-whisper-small/revision/main "HTTP/1.1 200 OK"
+2026-10-11 20:06:45,379 [INFO    ] src.transcribe: [transcribe] Transcribing 0924 (1)(4).mp4 [cpu]…
+2026-10-11 20:06:45,570 [INFO    ] faster_whisper: Processing audio with duration 01:06.571
+2026-10-11 20:06:45,662 [INFO    ] faster_whisper: VAD filter removed 00:00.000 of audio
+2026-10-11 20:06:46,962 [INFO    ] faster_whisper: Detected language 'hi' with probability 0.98
+2026-10-11 20:08:20,519 [INFO    ] src.transcribe: [transcribe] Done: 6 segments, 46 words, lang=hi (98%)
+2026-10-11 20:08:20,519 [INFO    ] stylecut: ─── Step 3/4: Hinglish + Captions ─────────────────────────────
+2026-10-11 20:08:21,124 [INFO    ] stylecut:   Processing: 0924 (1)(4).mp4
+2026-10-11 20:10:07,952 [INFO    ] src.captions: [captions] SRT  → 0924 (1)(4)_en.srt  (8 lines)
+2026-10-11 20:10:07,953 [INFO    ] src.captions: [captions] SRT  → 0924 (1)(4)_hinglish.srt  (8 lines)
+2026-10-11 20:10:07,954 [INFO    ] src.captions: [captions] ASS  → 0924 (1)(4)_word_highlight.ass  (46 dialogue events)
+2026-10-11 20:10:07,954 [INFO    ] src.captions: [captions] FFmpeg burn (h264_nvenc)
+2026-10-11 20:10:16,569 [INFO    ] src.captions: [captions] MP4  → 0924 (1)(4)_captioned.mp4
+2026-10-11 20:10:16,569 [INFO    ] stylecut: ─── Step 4/4: Finalise ─────────────────────────────────────────
+2026-10-11 20:10:16,570 [INFO    ] stylecut: ✅  Done.  Outputs in: D:\Personal Projects\ai editor\stylecut\projects\sample\output
+2026-10-11 20:10:16,570 [INFO    ] stylecut:    0924 (1)(4)_captioned.mp4
+2026-10-11 20:10:16,570 [INFO    ] stylecut:    0924 (1)(4)_en.srt
+2026-10-11 20:10:16,570 [INFO    ] stylecut:    0924 (1)(4)_hinglish.srt
+2026-10-11 20:10:16,570 [INFO    ] stylecut:    0924 (1)(4)_word_highlight.ass
+2026-10-11 20:10:16,570 [INFO    ] stylecut:    captions_en.srt
+2026-10-11 20:10:16,570 [INFO    ] stylecut:    captions_hinglish.srt
+2026-10-11 20:10:16,570 [INFO    ] stylecut:    captions_word_highlight.ass
+2026-10-11 20:10:16,570 [INFO    ] stylecut:    final_captioned.mp4
+2026-10-11 20:10:16,570 [INFO    ] stylecut:    sample_clip_captioned.mp4
+2026-10-11 20:10:16,570 [INFO    ] stylecut:    sample_clip_en.srt
+2026-10-11 20:10:16,570 [INFO    ] stylecut:    sample_clip_hinglish.srt
+2026-10-11 20:10:16,570 [INFO    ] stylecut:    sample_clip_word_highlight.ass
+2026-10-11 20:35:47,082 [INFO    ] stylecut: StyleCut  |  project: sample
+2026-10-11 20:35:47,191 [INFO    ] stylecut: ─── Step 1/5: Ingest ───────────────────────────────────────────
+2026-10-11 20:35:47,196 [INFO    ] src.ingest: [ingest] Found 1 clip(s) in D:\Personal Projects\ai editor\stylecut\projects\sample\footage
+2026-10-11 20:35:47,196 [INFO    ] stylecut: Clip                           Duration   Resolution    FPS  Flags
+2026-10-11 20:35:47,196 [INFO    ] stylecut: ------------------------------------------------------------------------
+2026-10-11 20:35:47,196 [INFO    ] stylecut: 0924 (1)(4).mp4                   66.6s    1080x1920 60.00  OK
+2026-10-11 20:35:47,196 [INFO    ] stylecut: ─── Step 2/5: Transcribe ───────────────────────────────────────
+2026-10-11 20:35:47,196 [INFO    ] src.transcribe: [transcribe] Cache hit:  0924 (1)(4).mp4
+2026-10-11 20:35:47,197 [INFO    ] stylecut: ─── Step 3/5: Hinglish Transliteration ─────────────────────────
+2026-10-11 20:35:47,789 [INFO    ] stylecut: ─── Step 4/5: Silence & Filler Removal (Rough Cut) ───────────
+2026-10-11 20:35:47,789 [INFO    ] stylecut:   Processing: 0924 (1)(4).mp4
+2026-10-11 20:35:47,790 [INFO    ] stylecut:   [cutter] Kept 1 speech segments | Duration: 66.6s → 12.2s (54.3s cut, -82%)
+2026-10-11 20:35:47,793 [INFO    ] src.cutter: [cutter] Rendering rough cut (h264_nvenc, 1 segments)…
+2026-10-11 20:35:51,308 [INFO    ] src.cutter: [cutter] Rough cut ready: 0924 (1)(4)_rough_cut.mp4 (28.0 MB)
+2026-10-11 20:35:51,309 [INFO    ] src.captions: [captions] SRT  → 0924 (1)(4)_rough_cut_en.srt  (8 lines)
+2026-10-11 20:35:51,312 [INFO    ] src.captions: [captions] SRT  → 0924 (1)(4)_rough_cut_hinglish.srt  (8 lines)
+2026-10-11 20:35:51,313 [INFO    ] src.captions: [captions] ASS  → 0924 (1)(4)_rough_cut_word_highlight.ass  (46 dialogue events)
+2026-10-11 20:35:51,313 [INFO    ] src.captions: [captions] FFmpeg burn (h264_nvenc)
+2026-10-11 20:35:53,040 [INFO    ] src.captions: [captions] MP4  → 0924 (1)(4)_rough_cut_captioned.mp4
+2026-10-11 20:35:53,040 [INFO    ] stylecut: ─── Step 5/5: Finalise ─────────────────────────────────────────
+2026-10-11 20:35:53,075 [INFO    ] stylecut: ✅  Rough Cut complete.  Outputs in: D:\Personal Projects\ai editor\stylecut\projects\sample\output
+2026-10-11 20:35:53,075 [INFO    ] stylecut:    0924 (1)(4)_captioned.mp4
+2026-10-11 20:35:53,075 [INFO    ] stylecut:    0924 (1)(4)_en.srt
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    0924 (1)(4)_hinglish.srt
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    0924 (1)(4)_rough_cut.mp4
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    0924 (1)(4)_rough_cut_captioned.mp4
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    0924 (1)(4)_rough_cut_en.srt
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    0924 (1)(4)_rough_cut_hinglish.srt
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    0924 (1)(4)_rough_cut_word_highlight.ass
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    0924 (1)(4)_word_highlight.ass
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    captions_en.srt
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    captions_hinglish.srt
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    captions_word_highlight.ass
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    final_captioned.mp4
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    rough_cut.mp4
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    rough_cut_captioned.mp4
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    rough_cut_en.srt
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    rough_cut_hinglish.ass
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    rough_cut_hinglish.srt
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    sample_clip_captioned.mp4
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    sample_clip_en.srt
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    sample_clip_hinglish.srt
+2026-10-11 20:35:53,076 [INFO    ] stylecut:    sample_clip_word_highlight.ass
+2026-10-11 20:45:09,798 [INFO    ] stylecut: StyleCut  |  project: sample
+2026-10-11 20:45:09,869 [INFO    ] stylecut: ─── Step 1/5: Ingest ───────────────────────────────────────────
+2026-10-11 20:45:09,870 [INFO    ] src.ingest: [ingest] Found 1 clip(s) in D:\Personal Projects\ai editor\stylecut\projects\sample\footage
+2026-10-11 20:45:09,870 [INFO    ] stylecut: Clip                           Duration   Resolution    FPS  Flags
+2026-10-11 20:45:09,871 [INFO    ] stylecut: ------------------------------------------------------------------------
+2026-10-11 20:45:09,871 [INFO    ] stylecut: 0924 (1)(4).mp4                   66.6s    1080x1920 60.00  OK
+2026-10-11 20:45:09,871 [INFO    ] stylecut: ─── Step 2/5: Transcribe ───────────────────────────────────────
+2026-10-11 20:45:09,871 [INFO    ] src.transcribe: [transcribe] Cache hit:  0924 (1)(4).mp4
+2026-10-11 20:45:09,872 [INFO    ] stylecut: ─── Step 3/5: Hinglish Transliteration ─────────────────────────
+2026-10-11 20:45:10,417 [INFO    ] stylecut: ─── Step 4/5: Silence & Filler Removal (Rough Cut) ───────────
+2026-10-11 20:45:10,417 [INFO    ] stylecut:   Processing: 0924 (1)(4).mp4
+2026-10-11 20:45:10,419 [INFO    ] stylecut:   [cutter] Kept 1 speech segments | Duration: 66.6s → 12.2s (54.3s cut, -82%)
+2026-10-11 20:45:10,421 [INFO    ] src.cutter: [cutter] Rendering rough cut (h264_nvenc, 1 segments)…
+2026-10-11 20:45:13,885 [INFO    ] src.cutter: [cutter] Rough cut ready: 0924 (1)(4)_rough_cut.mp4 (28.0 MB)
+2026-10-11 20:45:13,885 [INFO    ] src.captions: [captions] SRT  → 0924 (1)(4)_rough_cut_en.srt  (8 lines)
+2026-10-11 20:45:13,886 [INFO    ] src.captions: [captions] SRT  → 0924 (1)(4)_rough_cut_hinglish.srt  (8 lines)
+2026-10-11 20:45:13,887 [INFO    ] src.captions: [captions] ASS  → 0924 (1)(4)_rough_cut_word_highlight.ass  (46 dialogue events)
+2026-10-11 20:45:13,887 [INFO    ] src.captions: [captions] FFmpeg burn (h264_nvenc)
+2026-10-11 20:45:15,507 [INFO    ] src.captions: [captions] MP4  → 0924 (1)(4)_rough_cut_captioned.mp4
+2026-10-11 20:45:15,508 [INFO    ] stylecut: ─── Step 5/5: Finalise ─────────────────────────────────────────
+2026-10-11 20:45:15,531 [INFO    ] stylecut: ✅  Rough Cut complete.  Outputs in: D:\Personal Projects\ai editor\stylecut\projects\sample\output
+2026-10-11 20:45:15,531 [INFO    ] stylecut:    0924 (1)(4)_captioned.mp4
+2026-10-11 20:45:15,532 [INFO    ] stylecut:    0924 (1)(4)_en.srt
+2026-10-11 20:45:15,532 [INFO    ] stylecut:    0924 (1)(4)_hinglish.srt
+2026-10-11 20:45:15,532 [INFO    ] stylecut:    0924 (1)(4)_rough_cut.mp4
+2026-10-11 20:45:15,532 [INFO    ] stylecut:    0924 (1)(4)_rough_cut_captioned.mp4
+2026-10-11 20:45:15,532 [INFO    ] stylecut:    0924 (1)(4)_rough_cut_en.srt
+2026-10-11 20:45:15,532 [INFO    ] stylecut:    0924 (1)(4)_rough_cut_hinglish.srt
+2026-10-11 20:45:15,532 [INFO    ] stylecut:    0924 (1)(4)_rough_cut_word_highlight.ass
+2026-10-11 20:45:15,532 [INFO    ] stylecut:    0924 (1)(4)_word_highlight.ass
+2026-10-11 20:45:15,532 [INFO    ] stylecut:    captions_en.srt
+2026-10-11 20:45:15,533 [INFO    ] stylecut:    captions_hinglish.srt
+2026-10-11 20:45:15,533 [INFO    ] stylecut:    captions_word_highlight.ass
+2026-10-11 20:45:15,533 [INFO    ] stylecut:    final_captioned.mp4
+2026-10-11 20:45:15,533 [INFO    ] stylecut:    rough_cut.mp4
+2026-10-11 20:45:15,533 [INFO    ] stylecut:    rough_cut_captioned.mp4
+2026-10-11 20:45:15,533 [INFO    ] stylecut:    rough_cut_en.srt
+2026-10-11 20:45:15,533 [INFO    ] stylecut:    rough_cut_hinglish.ass
+2026-10-11 20:45:15,533 [INFO    ] stylecut:    rough_cut_hinglish.srt
+2026-10-11 20:45:15,533 [INFO    ] stylecut:    sample_clip_captioned.mp4
+2026-10-11 20:45:15,533 [INFO    ] stylecut:    sample_clip_en.srt
+2026-10-11 20:45:15,533 [INFO    ] stylecut:    sample_clip_hinglish.srt
+2026-10-11 20:45:15,533 [INFO    ] stylecut:    sample_clip_word_highlight.ass

@@ -1,0 +1,21 @@
+{
+  "name": "captions-engine",
+  "version": "1.0.0",
+  "description": "StyleCut Remotion-powered template caption engine",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "remotion bundle src/index.ts",
+    "render": "remotion render src/index.ts"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.218",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.218"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "typescript": "^5.4.5"
+  }
+}

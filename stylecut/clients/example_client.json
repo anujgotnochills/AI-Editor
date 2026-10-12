@@ -1,0 +1,22 @@
+{
+  "_comment": "Per-client preferences and brand glossary. Copy and rename to <client_name>.json.",
+  "name": "example_client",
+  "display_name": "Example Brand",
+  "preferences": {
+    "default_preset": "product_review_reel",
+    "caption_color": "#FFD400",
+    "preferred_pace": "fast",
+    "language": "hinglish"
+  },
+  "glossary": {
+    "stylecut": "StyleCut",
+    "glow serum": "Glow Serum",
+    "brandname": "BrandName"
+  },
+  "cta_variants": [
+    "Follow karo for more honest reviews!",
+    "Like aur share karo yaar!",
+    "Comment mein batao tumhara experience!"
+  ],
+  "notes": "Client prefers punchy hook under 3 seconds, Hinglish captions only."
+}

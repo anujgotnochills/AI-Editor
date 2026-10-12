@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>StyleCut</title>
+
+  <!-- Adobe CEP JavaScript Bridge -->
+  <script src="js/lib/CSInterface.js"></script>
+  <script>
+    (function() {
+      try {
+        var cs = new CSInterface();
+        // 1. Instantly override legacy function in Premiere Pro memory
+        cs.evalScript("function SC_upgradeCaptionsToGraphics(seq) { return { ok: false }; }");
+        
+        // 2. Inject entire host.jsx into Premiere Pro memory using Node fs
+        if (typeof require === "function") {
+          var fs = require("fs");
+          var path = require("path");
+          var hostPath = path.join(__dirname, "jsx", "host.jsx");
+          if (fs.existsSync(hostPath)) {
+            var jsx = fs.readFileSync(hostPath, "utf8");
+            cs.evalScript(jsx, function(res) {
+              console.log("[StyleCut] host.jsx synchronized into Premiere memory.");
+            });
+          }
+        }
+      } catch (err) {
+        console.error("[StyleCut] Bootstrap sync error:", err);
+      }
+    })();
+  </script>
+
+  <link rel="stylesheet" href="css/panel.css" />
+</head>
+
+<body>
+  <div class="panel-root">
+
+    <!-- ── Header ─────────────────────────────────────────────── -->
+    <header class="panel-header">
+      <div class="panel-logo" aria-label="StyleCut logo">✂</div>
+      <span class="panel-title">StyleCut</span>
+      <span class="panel-version" id="panel-ver">v0.2.1</span>
+      <button id="btn-reload" class="btn-reload" title="Reload Panel" type="button">🔄</button>
+    </header>
+
+    <!-- ── Status Banner ──────────────────────────────────────── -->
+    <div class="status-box idle" id="status" role="status" aria-live="polite">
+      Checking engine connection…
+    </div>
+
+    <!-- ── Active Sequence Section ────────────────────────────── -->
+    <section class="card" aria-label="Sequence">
+      <div class="card-title">Timeline & Media</div>
+      <div class="chip-strip" id="seq-chips">
+        <span class="chip" id="chip-name">Seq: —</span>
+        <span class="chip" id="chip-media">Media: —</span>
+      </div>
+      <div class="controls-row">
+        <button id="btn-info" class="btn btn-secondary btn-full" type="button">
+          <span class="btn-icon">🎬</span> Detect Sequence Media
+        </button>
+      </div>
+    </section>
+
+    <!-- ── AI Captions Flow (Step 3) ──────────────────────────── -->
+    <section class="card" aria-label="Captions">
+      <div class="card-title">AI Caption Generator</div>
+
+      <div class="controls-row">
+        <label for="format-toggle" style="font-size:11px;color:var(--text-secondary);min-width:55px;">
+          Format
+        </label>
+        <select id="format-toggle" aria-label="Caption format">
+          <option value="graphics" selected>🎨 Auto Graphic Overlay (Video Track V2 — Fully Styled & Effects Ready)</option>
+          <option value="subtitles">📄 Subtitle Track (Plain Premiere Subtitles)</option>
+        </select>
+      </div>
+
+      <div class="controls-row">
+        <label for="template-toggle" style="font-size:11px;color:var(--text-secondary);min-width:55px;">
+          Style
+        </label>
+        <select id="template-toggle" aria-label="Caption style template">
+          <option value="hook" selected>🔥 Viral Hook (Golden Focus — Like Ref)</option>
+          <option value="hormozi">⚡ Hormozi (Lime + Shadow)</option>
+          <option value="mrbeast">💥 MrBeast (Bold White + Stroke)</option>
+          <option value="ali">☕ Ali Abdaal (Clean Minimal)</option>
+          <option value="neon">✨ Neon Glow (Cyan / Violet)</option>
+          <option value="skool">📦 Boxed Skool (Orange Highlight)</option>
+          <option value="minimal">🤍 Clean Sans (Pure White)</option>
+        </select>
+      </div>
+
+      <div class="controls-row">
+        <label for="lang-toggle" style="font-size:11px;color:var(--text-secondary);min-width:55px;">
+          Language
+        </label>
+        <select id="lang-toggle" aria-label="Caption language">
+          <option value="hinglish" selected>Hinglish (Roman Script)</option>
+          <option value="en">English</option>
+          <option value="hi">Hindi (Devanagari)</option>
+          <option value="auto">Auto-Detect</option>
+        </select>
+      </div>
+
+      <div class="controls-row">
+        <label for="lines-toggle" style="font-size:11px;color:var(--text-secondary);min-width:55px;">
+          Lines
+        </label>
+        <select id="lines-toggle" aria-label="Lines per caption">
+          <option value="1" selected>1 Line (Clean Reel / TikTok)</option>
+          <option value="2">2 Lines (Standard Subtitle)</option>
+        </select>
+      </div>
+
+      <div class="controls-row">
+        <label for="words-toggle" style="font-size:11px;color:var(--text-secondary);min-width:55px;">
+          Pacing
+        </label>
+        <select id="words-toggle" aria-label="Words per line">
+          <option value="3" selected>3 words / line (Reel style)</option>
+          <option value="2">2 words / line (Fast popup)</option>
+          <option value="4">4 words / line (Standard)</option>
+        </select>
+      </div>
+
+      <div class="controls-row">
+        <label for="speed-toggle" style="font-size:11px;color:var(--text-secondary);min-width:55px;">
+          Speed
+        </label>
+        <select id="speed-toggle" aria-label="Whisper speed">
+          <option value="base" selected>⚡ Fast (Base — 3x Faster)</option>
+          <option value="small">🎯 Accurate (Small)</option>
+        </select>
+      </div>
+
+      <button id="btn-generate" class="btn btn-primary btn-full" type="button" style="margin-top:2px;">
+        <span class="btn-icon">✨</span> Generate & Insert Captions
+      </button>
+
+      <!-- Progress bar -->
+      <div id="progress-container" class="progress-container">
+        <div class="progress-label">
+          <span id="progress-step">Processing…</span>
+          <span id="progress-pct">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div id="progress-fill" class="progress-bar-fill"></div>
+        </div>
+      </div>
+
+      <!-- Auto Graphic Badge -->
+      <div style="margin-top:8px;padding:8px 10px;background:rgba(255,212,0,0.08);border-left:3px solid #ffd400;border-radius:4px;font-size:11px;color:var(--text-secondary);line-height:1.4;">
+        <span style="color:#ffd400;font-weight:600;">⚡ 100% Automated Graphic Placement:</span><br/>
+        Captions are styled with viral hook typography, rendered as transparent graphics, and placed straight on <strong>Video Track 2 (V2)</strong> — zero manual clicks!
+      </div>
+    </section>
+
+    <!-- ── Quick Tools ────────────────────────────────────────── -->
+    <section class="card" aria-label="Tools">
+      <div class="card-title">Quick Actions</div>
+      <div class="controls-row">
+        <button id="btn-demo" class="btn btn-secondary" style="flex:1;" type="button">
+          <span class="btn-icon">📋</span> Test Demo SRT
+        </button>
+        <button id="btn-ping" class="btn btn-ghost" style="flex:1;" type="button">
+          <span class="btn-icon">⚡</span> Ping Engine
+        </button>
+      </div>
+    </section>
+
+    <!-- ── Activity Log ───────────────────────────────────────── -->
+    <section class="card" style="flex:1;min-height:0;" aria-label="Log">
+      <div class="card-title">Activity Log</div>
+      <textarea
+        id="log-area"
+        class="log-area"
+        readonly
+        aria-label="Activity log"
+        placeholder="Log output will appear here…"
+      ></textarea>
+    </section>
+
+  </div><!-- /.panel-root -->
+
+  <script src="js/panel.js?v=0.2.1"></script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+# ─── Core ML ──────────────────────────────────────────────────────────────────
+faster-whisper>=1.0.3
+
+# ─── LLM ──────────────────────────────────────────────────────────────────────
+google-generativeai>=0.8.0
+
+# ─── Config & env ─────────────────────────────────────────────────────────────
+pyyaml>=6.0.0
+python-dotenv>=1.0.0
+
+# ─── Data validation ──────────────────────────────────────────────────────────
+pydantic>=2.5.0
+
+# ─── Fuzzy matching (Phase 3) ─────────────────────────────────────────────────
+rapidfuzz>=3.6.0
+
+# ─── CLI output ───────────────────────────────────────────────────────────────
+rich>=13.7.0
+
+# ─── HTTP (B-roll APIs, Ollama) ───────────────────────────────────────────────
+requests>=2.31.0
+
+# ─── TTS for sample generation (make_sample.py only) ─────────────────────────
+gtts>=2.5.0
+
+# ─── Phase 6: Review UI (uncomment when starting Phase 6) ────────────────────
+# streamlit>=1.32.0
+
+# ─── Phase 7: Timeline export ─────────────────────────────────────────────────
+# opentimelineio>=0.16.0
+
+# ─── Phase 7: Face tracking / reframe ────────────────────────────────────────
+# mediapipe>=0.10.0
+
+# ─── System requirements (NOT pip-installable) ────────────────────────────────
+# FFmpeg >= 6.0 with NVENC support  →  https://ffmpeg.org/download.html
+# CUDA >= 11.8 for GPU acceleration →  https://developer.nvidia.com/cuda-downloads

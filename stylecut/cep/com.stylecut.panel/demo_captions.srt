@@ -1,0 +1,19 @@
+1
+00:00:01,000 --> 00:00:03,500
+Welcome to StyleCut — AI-powered video editing.
+
+2
+00:00:04,000 --> 00:00:07,200
+This caption was imported directly from an SRT file
+
+3
+00:00:07,500 --> 00:00:10,800
+into your Premiere Pro timeline using ExtendScript.
+
+4
+00:00:11,200 --> 00:00:14,500
+The caption track is fully editable — double-click to open the Captions panel.
+
+5
+00:00:15,000 --> 00:00:18,000
+Feasibility spike: Step 1 of 7 complete. 🎉

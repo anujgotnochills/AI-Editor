@@ -1,0 +1,604 @@
+{
+  "clip": "D:\\Personal Projects\\ai editor\\stylecut\\projects\\sample\\footage\\0924 (1)(4).mp4",
+  "language": "hi",
+  "language_probability": 0.9788,
+  "duration_sec": 66.571,
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 2.24,
+      "text": "मैं गर से fresh skin के साथ निकलती हूँ",
+      "words": [
+        {
+          "word": " मैं",
+          "start": 0.0,
+          "end": 0.42,
+          "probability": 0.6375
+        },
+        {
+          "word": " गर",
+          "start": 0.42,
+          "end": 0.58,
+          "probability": 0.5539
+        },
+        {
+          "word": " से",
+          "start": 0.58,
+          "end": 0.72,
+          "probability": 0.9275
+        },
+        {
+          "word": " fresh",
+          "start": 0.72,
+          "end": 0.92,
+          "probability": 0.0153
+        },
+        {
+          "word": " skin",
+          "start": 0.92,
+          "end": 1.26,
+          "probability": 0.8442
+        },
+        {
+          "word": " के",
+          "start": 1.26,
+          "end": 1.42,
+          "probability": 0.7736
+        },
+        {
+          "word": " साथ",
+          "start": 1.42,
+          "end": 1.64,
+          "probability": 0.7187
+        },
+        {
+          "word": " निकलती",
+          "start": 1.64,
+          "end": 2.1,
+          "probability": 0.6594
+        },
+        {
+          "word": " हूँ",
+          "start": 2.1,
+          "end": 2.24,
+          "probability": 0.6632
+        }
+      ]
+    },
+    {
+      "start": 2.24,
+      "end": 4.0,
+      "text": "तो लिटर, पानी, हल्दी खाना",
+      "words": [
+        {
+          "word": " तो",
+          "start": 2.24,
+          "end": 2.68,
+          "probability": 0.5672
+        },
+        {
+          "word": " लिटर,",
+          "start": 2.68,
+          "end": 2.98,
+          "probability": 0.6525
+        },
+        {
+          "word": " पानी,",
+          "start": 3.1,
+          "end": 3.32,
+          "probability": 0.7903
+        },
+        {
+          "word": " हल्दी",
+          "start": 3.42,
+          "end": 3.64,
+          "probability": 0.8382
+        },
+        {
+          "word": " खाना",
+          "start": 3.64,
+          "end": 4.0,
+          "probability": 0.8228
+        }
+      ]
+    },
+    {
+      "start": 4.0,
+      "end": 5.72,
+      "text": "सब का दियान रकती हूँ",
+      "words": [
+        {
+          "word": " सब",
+          "start": 4.0,
+          "end": 4.62,
+          "probability": 0.767
+        },
+        {
+          "word": " का",
+          "start": 4.62,
+          "end": 4.74,
+          "probability": 0.8275
+        },
+        {
+          "word": " दियान",
+          "start": 4.74,
+          "end": 4.98,
+          "probability": 0.8044
+        },
+        {
+          "word": " रकती",
+          "start": 4.98,
+          "end": 5.34,
+          "probability": 0.7182
+        },
+        {
+          "word": " हूँ",
+          "start": 5.34,
+          "end": 5.72,
+          "probability": 0.9259
+        }
+      ]
+    },
+    {
+      "start": 5.72,
+      "end": 7.22,
+      "text": "फिर भी पतानी क्यू।",
+      "words": [
+        {
+          "word": " फिर",
+          "start": 5.72,
+          "end": 6.02,
+          "probability": 0.8392
+        },
+        {
+          "word": " भी",
+          "start": 6.02,
+          "end": 6.16,
+          "probability": 0.8501
+        },
+        {
+          "word": " पतानी",
+          "start": 6.16,
+          "end": 6.6,
+          "probability": 0.7616
+        },
+        {
+          "word": " क्यू।",
+          "start": 6.6,
+          "end": 7.22,
+          "probability": 0.6167
+        }
+      ]
+    },
+    {
+      "start": 7.22,
+      "end": 9.42,
+      "text": "छें बजे के बाद मेरा फेस आज़े लगने लगने लगता है",
+      "words": [
+        {
+          "word": " छें",
+          "start": 7.22,
+          "end": 7.5,
+          "probability": 0.4211
+        },
+        {
+          "word": " बजे",
+          "start": 7.5,
+          "end": 7.74,
+          "probability": 0.5676
+        },
+        {
+          "word": " के",
+          "start": 7.74,
+          "end": 7.86,
+          "probability": 0.775
+        },
+        {
+          "word": " बाद",
+          "start": 7.86,
+          "end": 8.06,
+          "probability": 0.8552
+        },
+        {
+          "word": " मेरा",
+          "start": 8.06,
+          "end": 8.28,
+          "probability": 0.6304
+        },
+        {
+          "word": " फेस",
+          "start": 8.28,
+          "end": 8.52,
+          "probability": 0.6305
+        },
+        {
+          "word": " आज़े",
+          "start": 8.52,
+          "end": 8.82,
+          "probability": 0.5635
+        },
+        {
+          "word": " लगने",
+          "start": 8.82,
+          "end": 9.08,
+          "probability": 0.9354
+        },
+        {
+          "word": " लगने",
+          "start": 9.08,
+          "end": 9.2,
+          "probability": 0.6933
+        },
+        {
+          "word": " लगता",
+          "start": 9.2,
+          "end": 9.36,
+          "probability": 0.6605
+        },
+        {
+          "word": " है",
+          "start": 9.36,
+          "end": 9.42,
+          "probability": 0.5342
+        }
+      ]
+    },
+    {
+      "start": 9.42,
+      "end": 12.18,
+      "text": "ज़से मानो मेरे साथ मेरा फेस भी बाहर गूम की आया हूँ",
+      "words": [
+        {
+          "word": " ज़से",
+          "start": 9.42,
+          "end": 9.64,
+          "probability": 0.5479
+        },
+        {
+          "word": " मानो",
+          "start": 9.64,
+          "end": 9.98,
+          "probability": 0.8847
+        },
+        {
+          "word": " मेरे",
+          "start": 9.98,
+          "end": 10.28,
+          "probability": 0.9133
+        },
+        {
+          "word": " साथ",
+          "start": 10.28,
+          "end": 10.5,
+          "probability": 0.7824
+        },
+        {
+          "word": " मेरा",
+          "start": 10.5,
+          "end": 10.7,
+          "probability": 0.8149
+        },
+        {
+          "word": " फेस",
+          "start": 10.7,
+          "end": 10.98,
+          "probability": 0.8725
+        },
+        {
+          "word": " भी",
+          "start": 10.98,
+          "end": 11.08,
+          "probability": 0.9085
+        },
+        {
+          "word": " बाहर",
+          "start": 11.08,
+          "end": 11.32,
+          "probability": 0.7024
+        },
+        {
+          "word": " गूम",
+          "start": 11.32,
+          "end": 11.56,
+          "probability": 0.7745
+        },
+        {
+          "word": " की",
+          "start": 11.56,
+          "end": 11.74,
+          "probability": 0.5484
+        },
+        {
+          "word": " आया",
+          "start": 11.74,
+          "end": 11.92,
+          "probability": 0.8271
+        },
+        {
+          "word": " हूँ",
+          "start": 11.92,
+          "end": 12.18,
+          "probability": 0.7692
+        }
+      ]
+    }
+  ],
+  "words": [
+    {
+      "word": " मैं",
+      "start": 0.0,
+      "end": 0.42,
+      "probability": 0.6375
+    },
+    {
+      "word": " गर",
+      "start": 0.42,
+      "end": 0.58,
+      "probability": 0.5539
+    },
+    {
+      "word": " से",
+      "start": 0.58,
+      "end": 0.72,
+      "probability": 0.9275
+    },
+    {
+      "word": " fresh",
+      "start": 0.72,
+      "end": 0.92,
+      "probability": 0.0153
+    },
+    {
+      "word": " skin",
+      "start": 0.92,
+      "end": 1.26,
+      "probability": 0.8442
+    },
+    {
+      "word": " के",
+      "start": 1.26,
+      "end": 1.42,
+      "probability": 0.7736
+    },
+    {
+      "word": " साथ",
+      "start": 1.42,
+      "end": 1.64,
+      "probability": 0.7187
+    },
+    {
+      "word": " निकलती",
+      "start": 1.64,
+      "end": 2.1,
+      "probability": 0.6594
+    },
+    {
+      "word": " हूँ",
+      "start": 2.1,
+      "end": 2.24,
+      "probability": 0.6632
+    },
+    {
+      "word": " तो",
+      "start": 2.24,
+      "end": 2.68,
+      "probability": 0.5672
+    },
+    {
+      "word": " लिटर,",
+      "start": 2.68,
+      "end": 2.98,
+      "probability": 0.6525
+    },
+    {
+      "word": " पानी,",
+      "start": 3.1,
+      "end": 3.32,
+      "probability": 0.7903
+    },
+    {
+      "word": " हल्दी",
+      "start": 3.42,
+      "end": 3.64,
+      "probability": 0.8382
+    },
+    {
+      "word": " खाना",
+      "start": 3.64,
+      "end": 4.0,
+      "probability": 0.8228
+    },
+    {
+      "word": " सब",
+      "start": 4.0,
+      "end": 4.62,
+      "probability": 0.767
+    },
+    {
+      "word": " का",
+      "start": 4.62,
+      "end": 4.74,
+      "probability": 0.8275
+    },
+    {
+      "word": " दियान",
+      "start": 4.74,
+      "end": 4.98,
+      "probability": 0.8044
+    },
+    {
+      "word": " रकती",
+      "start": 4.98,
+      "end": 5.34,
+      "probability": 0.7182
+    },
+    {
+      "word": " हूँ",
+      "start": 5.34,
+      "end": 5.72,
+      "probability": 0.9259
+    },
+    {
+      "word": " फिर",
+      "start": 5.72,
+      "end": 6.02,
+      "probability": 0.8392
+    },
+    {
+      "word": " भी",
+      "start": 6.02,
+      "end": 6.16,
+      "probability": 0.8501
+    },
+    {
+      "word": " पतानी",
+      "start": 6.16,
+      "end": 6.6,
+      "probability": 0.7616
+    },
+    {
+      "word": " क्यू।",
+      "start": 6.6,
+      "end": 7.22,
+      "probability": 0.6167
+    },
+    {
+      "word": " छें",
+      "start": 7.22,
+      "end": 7.5,
+      "probability": 0.4211
+    },
+    {
+      "word": " बजे",
+      "start": 7.5,
+      "end": 7.74,
+      "probability": 0.5676
+    },
+    {
+      "word": " के",
+      "start": 7.74,
+      "end": 7.86,
+      "probability": 0.775
+    },
+    {
+      "word": " बाद",
+      "start": 7.86,
+      "end": 8.06,
+      "probability": 0.8552
+    },
+    {
+      "word": " मेरा",
+      "start": 8.06,
+      "end": 8.28,
+      "probability": 0.6304
+    },
+    {
+      "word": " फेस",
+      "start": 8.28,
+      "end": 8.52,
+      "probability": 0.6305
+    },
+    {
+      "word": " आज़े",
+      "start": 8.52,
+      "end": 8.82,
+      "probability": 0.5635
+    },
+    {
+      "word": " लगने",
+      "start": 8.82,
+      "end": 9.08,
+      "probability": 0.9354
+    },
+    {
+      "word": " लगने",
+      "start": 9.08,
+      "end": 9.2,
+      "probability": 0.6933
+    },
+    {
+      "word": " लगता",
+      "start": 9.2,
+      "end": 9.36,
+      "probability": 0.6605
+    },
+    {
+      "word": " है",
+      "start": 9.36,
+      "end": 9.42,
+      "probability": 0.5342
+    },
+    {
+      "word": " ज़से",
+      "start": 9.42,
+      "end": 9.64,
+      "probability": 0.5479
+    },
+    {
+      "word": " मानो",
+      "start": 9.64,
+      "end": 9.98,
+      "probability": 0.8847
+    },
+    {
+      "word": " मेरे",
+      "start": 9.98,
+      "end": 10.28,
+      "probability": 0.9133
+    },
+    {
+      "word": " साथ",
+      "start": 10.28,
+      "end": 10.5,
+      "probability": 0.7824
+    },
+    {
+      "word": " मेरा",
+      "start": 10.5,
+      "end": 10.7,
+      "probability": 0.8149
+    },
+    {
+      "word": " फेस",
+      "start": 10.7,
+      "end": 10.98,
+      "probability": 0.8725
+    },
+    {
+      "word": " भी",
+      "start": 10.98,
+      "end": 11.08,
+      "probability": 0.9085
+    },
+    {
+      "word": " बाहर",
+      "start": 11.08,
+      "end": 11.32,
+      "probability": 0.7024
+    },
+    {
+      "word": " गूम",
+      "start": 11.32,
+      "end": 11.56,
+      "probability": 0.7745
+    },
+    {
+      "word": " की",
+      "start": 11.56,
+      "end": 11.74,
+      "probability": 0.5484
+    },
+    {
+      "word": " आया",
+      "start": 11.74,
+      "end": 11.92,
+      "probability": 0.8271
+    },
+    {
+      "word": " हूँ",
+      "start": 11.92,
+      "end": 12.18,
+      "probability": 0.7692
+    }
+  ]
+}
