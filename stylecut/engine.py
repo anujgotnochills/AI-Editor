@@ -40,7 +40,7 @@ def main() -> None:
     logger.info(f"Starting StyleCut Engine on http://{args.host}:{args.port}")
     logger.info(f"Engine log file: {log_file}")
 
-    uvicorn.run("src.server.app:app", host=args.host, port=args.port, log_level="info", reload=args.debug)
+    uvicorn.run("src.server.app:app", host=args.host, port=args.port, log_level="info", reload=True)
 
 
 if __name__ == "__main__":

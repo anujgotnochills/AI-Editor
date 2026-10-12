@@ -145,8 +145,20 @@
                             let data = "";
                             res.on("data", chunk => data += chunk);
                             res.on("end", () => {
-                                try { resolve(JSON.parse(data)); }
-                                catch (e) { reject(e); }
+                                try {
+                                    const parsed = JSON.parse(data);
+                                    if (res.statusCode && res.statusCode >= 400) {
+                                        reject(new Error(parsed.detail || parsed.message || `HTTP ${res.statusCode}`));
+                                    } else {
+                                        resolve(parsed);
+                                    }
+                                } catch (e) {
+                                    if (res.statusCode && res.statusCode >= 400) {
+                                        reject(new Error(`HTTP ${res.statusCode}: ${data}`));
+                                    } else {
+                                        reject(e);
+                                    }
+                                }
                             });
                         }).on("error", reject);
                     } catch (e) {
@@ -192,8 +204,20 @@
                             let data = "";
                             res.on("data", chunk => data += chunk);
                             res.on("end", () => {
-                                try { resolve(JSON.parse(data)); }
-                                catch (e) { reject(e); }
+                                try {
+                                    const parsed = JSON.parse(data);
+                                    if (res.statusCode && res.statusCode >= 400) {
+                                        reject(new Error(parsed.detail || parsed.message || `HTTP ${res.statusCode}`));
+                                    } else {
+                                        resolve(parsed);
+                                    }
+                                } catch (e) {
+                                    if (res.statusCode && res.statusCode >= 400) {
+                                        reject(new Error(`HTTP ${res.statusCode}: ${data}`));
+                                    } else {
+                                        reject(e);
+                                    }
+                                }
                             });
                         });
                         req.on("error", reject);
@@ -341,7 +365,10 @@
             };
 
             const postRes = await apiPost("/jobs/rough_cut", payload);
-            const jobId = postRes.job_id;
+            const jobId = postRes ? postRes.job_id : null;
+            if (!jobId) {
+                throw new Error((postRes && (postRes.detail || postRes.message)) || "Failed to start rough cut job: no job ID returned.");
+            }
             log(`Rough cut job started [ID: ${jobId}]`);
 
             // Poll progress

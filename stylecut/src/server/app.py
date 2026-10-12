@@ -55,7 +55,7 @@ def get_root() -> dict[str, Any]:
         "status": "ok",
         "message": "StyleCut Engine is running",
         "version": "0.1.0",
-        "endpoints": ["/health", "/jobs/captions", "/jobs/{id}/progress", "/jobs/{id}/result"]
+        "endpoints": ["/health", "/jobs/captions", "/jobs/rough_cut", "/jobs/{id}/progress", "/jobs/{id}/result"]
     }
 
 
