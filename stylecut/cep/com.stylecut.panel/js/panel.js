@@ -393,29 +393,10 @@
             lastRoughCutResult = resultData;
             log(`Precision cuts computed: ${resultData.cuts_count} cuts placed, ${resultData.duration_saved}s saved (${resultData.reduction_pct}% reduction).`);
 
-            // 3. Import XML Sequence into Premiere Pro
-            setProgress(95, "Importing sequence XML into Premiere Pro…");
-            let xmlImported = false;
-            if (resultData.xml_path) {
-                log(`🎬 Importing XML sequence into Premiere Pro: ${resultData.xml_path}`);
-                const impRes = await evalScript("SC_importFCPXML", resultData.xml_path);
-                if (impRes && impRes.ok) {
-                    xmlImported = true;
-                    log(`🎉 Rough Cut sequence "${impRes.sequenceName || 'StyleCut Rough Cut'}" imported into Premiere!`);
-                } else {
-                    log(`XML import message: ${impRes ? (impRes.error || JSON.stringify(impRes)) : 'failed'}. Trying direct cut assembly fallback...`, "warn");
-                }
-            }
-
-            if (!xmlImported && resultData.cut_list_path) {
-                log(`Assembling timeline clips via ExtendScript fallback: ${resultData.cut_list_path}`);
-                const fbRes = await evalScript("SC_createRoughCutSequence", resultData.cut_list_path);
-                if (fbRes && fbRes.ok) {
-                    log(`🎉 Placed ${fbRes.placedCuts} cuts into sequence "${fbRes.sequenceName}"!`);
-                } else {
-                    log(`Fallback placement result: ${fbRes ? fbRes.error : 'unknown'}`, "warn");
-                }
-            }
+            // 3. Removed new sequence creation path (operates in-place on activeSequence)
+            log("⚡ In-place cut flow active: skipping XML sequence creation.", "info");
+            setProgress(100, "Rough Cut Complete!");
+            setStatus("Rough Cut Created ✓", "ok");
 
             setProgress(100, "Rough Cut Complete!");
             setStatus("Rough Cut Created ✓", "ok");
@@ -446,28 +427,41 @@
     async function runSpikeCut() {
         if (isProcessing) return;
         isProcessing = true;
+        if (btnRoughCut) {
+            btnRoughCut.disabled = true;
+            btnRoughCut.style.opacity = "0.6";
+        }
         if (btnSpikeCut) {
             btnSpikeCut.disabled = true;
             btnSpikeCut.style.opacity = "0.6";
         }
         log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         log("🧪 RUNNING STEP (a) SPIKE: IN-PLACE SEQUENCE CUT");
-        log("Hard-coded target: Remove 5-7s & 20-22s on active sequence");
-        setStatus("Running Spike Cut…", "busy");
-        setProgress(30, "Executing SC_spikeCutInPlace in Premiere…");
+        log("Operating on: app.project.activeSequence (NO NEW SEQUENCE)");
+        log("Hard-coded target: Remove 5-7s & 20-22s on the active timeline");
+        setStatus("Running In-Place Cut…", "busy");
+        setProgress(20, "Detecting active sequence in Premiere…");
 
         try {
+            // 1. Detect media on active sequence
+            const seqInfo = await detectSequenceMedia();
+            if (seqInfo) {
+                log(`Active sequence confirmed: "${seqInfo.name}" (${seqInfo.duration ? seqInfo.duration.toFixed(1) : '?'}s)`);
+                if (seqInfo.mediaPath) log(`Media path: ${seqInfo.mediaPath}`);
+            }
+
+            setProgress(50, "Executing SC_spikeCutInPlace on active sequence…");
             const res = await evalScript("SC_spikeCutInPlace");
             if (!res || !res.ok) {
                 const errMsg = res ? (res.error || res.raw || JSON.stringify(res)) : "No response from ExtendScript";
-                log(`❌ Spike Cut Failed: ${errMsg}`, "error");
-                setStatus("Spike Cut Failed", "error");
+                log(`❌ In-Place Cut Failed: ${errMsg}`, "error");
+                setStatus("In-Place Cut Failed", "error");
                 return;
             }
 
-            setStatus("Spike Cut Completed ✓", "ok");
-            setProgress(100, "Spike Cut Complete!");
-            log(`✅ Step (a) Spike Succeeded!`, "ok");
+            setStatus("In-Place Cut Completed ✓", "ok");
+            setProgress(100, "In-Place Cut Complete!");
+            log(`✅ Step (a) In-Place Cut Succeeded!`, "ok");
             log(`Premiere Pro Version: ${res.premiereVersion}`);
             log(`Active Sequence: "${res.sequenceName}"`);
             log(`Clips Before: ${res.clipsBeforeCount} ➔ Clips After: ${res.clipsAfterCount} (Audio clips: ${res.audioClipsAfterCount})`);
@@ -487,11 +481,19 @@
                 res.apiLogs.forEach((l) => log(`  ${l}`));
                 log("────────────────────────────────────");
             }
+
+            // Refresh sequence info after in-place cut
+            await detectSequenceMedia();
+
         } catch (err) {
-            log(`❌ Spike Cut Execution Error: ${err.message}`, "error");
-            setStatus("Spike Cut Error", "error");
+            log(`❌ In-Place Cut Execution Error: ${err.message}`, "error");
+            setStatus("In-Place Cut Error", "error");
         } finally {
             isProcessing = false;
+            if (btnRoughCut) {
+                btnRoughCut.disabled = false;
+                btnRoughCut.style.opacity = "1";
+            }
             if (btnSpikeCut) {
                 btnSpikeCut.disabled = false;
                 btnSpikeCut.style.opacity = "1";
@@ -998,7 +1000,7 @@
     }
 
     if (btnRoughCut) {
-        btnRoughCut.addEventListener("click", generatePrecisionRoughCut);
+        btnRoughCut.addEventListener("click", runSpikeCut);
     }
 
     if (btnSpikeCut) {

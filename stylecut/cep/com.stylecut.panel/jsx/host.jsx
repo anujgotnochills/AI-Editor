@@ -68,15 +68,25 @@ function SC_getActiveSequenceInfo() {
         var fps = 0;
         try { fps = parseFloat(seq.timebase); } catch (e) {}
 
+        function cleanClipName(n) {
+            if (!n) return "";
+            var s = String(n).replace(/\s*\[[VA][0-9]*\]/gi, "");
+            s = s.replace(/\.[a-zA-Z0-9]{2,4}$/i, "");
+            return s.toLowerCase();
+        }
+
         // Helper: search project panel for clip media path by name
         function findMediaByClipName(targetName, folder) {
             if (!targetName) return "";
+            var cleanTarget = cleanClipName(targetName);
             if (!folder) folder = app.project.rootItem;
             for (var i = 0; i < folder.children.numItems; i++) {
                 var item = folder.children[i];
                 if (item.type === ProjectItemType.CLIP) {
-                    if (item.name === targetName || item.name.indexOf(targetName) !== -1 || targetName.indexOf(item.name) !== -1) {
-                        var mp = item.getMediaPath();
+                    var cleanItem = cleanClipName(item.name);
+                    if (cleanItem === cleanTarget || (cleanTarget.length > 2 && cleanItem.indexOf(cleanTarget) !== -1) || (cleanItem.length > 2 && cleanTarget.indexOf(cleanItem) !== -1)) {
+                        var mp = "";
+                        try { mp = item.getMediaPath(); } catch (e) {}
                         if (mp) return mp;
                     }
                 } else if (item.type === ProjectItemType.BIN) {
@@ -87,35 +97,16 @@ function SC_getActiveSequenceInfo() {
             return "";
         }
 
-        // Helper: get first available master media file in project
-        function findAnyProjectMedia(folder) {
-            if (!folder) folder = app.project.rootItem;
-            for (var i = 0; i < folder.children.numItems; i++) {
-                var item = folder.children[i];
-                if (item.type === ProjectItemType.CLIP) {
-                    var p = item.getMediaPath();
-                    if (p && p.length > 0) return p;
-                } else if (item.type === ProjectItemType.BIN) {
-                    var sub = findAnyProjectMedia(item);
-                    if (sub) return sub;
-                }
-            }
-            return "";
-        }
-
-        var defaultMedia = findAnyProjectMedia();
-
         // Helper to extract clean timing info from any TrackItem
         function getClipTiming(clip, trackIdx, trackType) {
             var mp = "";
             try {
-                if (clip.projectItem) mp = clip.projectItem.getMediaPath();
+                if (clip.projectItem && typeof clip.projectItem.getMediaPath === "function") {
+                    mp = clip.projectItem.getMediaPath();
+                }
             } catch (e1) {}
             if (!mp && clip.name) {
                 mp = findMediaByClipName(clip.name);
-            }
-            if (!mp) {
-                mp = defaultMedia;
             }
 
             var startSec = 0;
@@ -151,21 +142,7 @@ function SC_getActiveSequenceInfo() {
             };
         }
 
-        // 1. Inspect Audio Tracks
-        var audioClips = [];
-        if (seq.audioTracks && seq.audioTracks.numTracks > 0) {
-            for (var at = 0; at < seq.audioTracks.numTracks; at++) {
-                var aTrack = seq.audioTracks[at];
-                if (aTrack.clips && aTrack.clips.numItems > 0) {
-                    for (var ac = 0; ac < aTrack.clips.numItems; ac++) {
-                        var aClip = aTrack.clips[ac];
-                        audioClips.push(getClipTiming(aClip, at, "audio"));
-                    }
-                }
-            }
-        }
-
-        // 2. Inspect Video Tracks
+        // 1. Inspect Video Tracks (V1 is primary source for video media)
         var videoClips = [];
         if (seq.videoTracks && seq.videoTracks.numTracks > 0) {
             for (var vt = 0; vt < seq.videoTracks.numTracks; vt++) {
@@ -179,19 +156,37 @@ function SC_getActiveSequenceInfo() {
             }
         }
 
-        // Choose timeline clips: prefer audio tracks, fallback to video tracks
-        var timelineClips = [];
-        if (audioClips.length > 0) {
-            timelineClips = audioClips;
-        } else if (videoClips.length > 0) {
-            timelineClips = videoClips;
+        // 2. Inspect Audio Tracks
+        var audioClips = [];
+        if (seq.audioTracks && seq.audioTracks.numTracks > 0) {
+            for (var at = 0; at < seq.audioTracks.numTracks; at++) {
+                var aTrack = seq.audioTracks[at];
+                if (aTrack.clips && aTrack.clips.numItems > 0) {
+                    for (var ac = 0; ac < aTrack.clips.numItems; ac++) {
+                        var aClip = aTrack.clips[ac];
+                        audioClips.push(getClipTiming(aClip, at, "audio"));
+                    }
+                }
+            }
         }
 
+        // Prefer video tracks, fallback to audio tracks
+        var timelineClips = (videoClips.length > 0) ? videoClips : audioClips;
+
         var mediaPath = "";
-        if (timelineClips.length > 0 && timelineClips[0].media_path) {
-            mediaPath = timelineClips[0].media_path;
-        } else {
-            mediaPath = defaultMedia;
+        for (var tc = 0; tc < timelineClips.length; tc++) {
+            if (timelineClips[tc].media_path) {
+                mediaPath = timelineClips[tc].media_path;
+                break;
+            }
+        }
+        if (!mediaPath && audioClips.length > 0) {
+            for (var ac = 0; ac < audioClips.length; ac++) {
+                if (audioClips[ac].media_path) {
+                    mediaPath = audioClips[ac].media_path;
+                    break;
+                }
+            }
         }
 
         // Sort timeline clips chronologically
@@ -1117,11 +1112,33 @@ function SC_spikeCutInPlace() {
         }
         apiLogs.push("Initial V1 clips count: " + vClipsCount);
 
+        function findProjectItemByName(targetName, folder) {
+            if (!targetName) return null;
+            var cleanTarget = cleanClipName(targetName);
+            if (!folder) folder = app.project.rootItem;
+            for (var f = 0; f < folder.children.numItems; f++) {
+                var it = folder.children[f];
+                if (it.type === ProjectItemType.CLIP) {
+                    var cleanIt = cleanClipName(it.name);
+                    if (cleanIt === cleanTarget || (cleanTarget.length > 2 && cleanIt.indexOf(cleanTarget) !== -1) || (cleanIt.length > 2 && cleanTarget.indexOf(cleanIt) !== -1)) {
+                        return it;
+                    }
+                } else if (it.type === ProjectItemType.BIN) {
+                    var sub = findProjectItemByName(targetName, it);
+                    if (sub) return sub;
+                }
+            }
+            return null;
+        }
+
         // 1. Read existing clips on V1
         var origClips = [];
         for (var i = 0; i < vClipsCount; i++) {
             var c = vTrack.clips[i];
             var pItem = c.projectItem;
+            if (!pItem && c.name) {
+                pItem = findProjectItemByName(c.name);
+            }
             var cStart = parseFloat(c.start.seconds) || 0;
             var cEnd = parseFloat(c.end.seconds) || 0;
             var cIn = parseFloat(c.inPoint.seconds) || 0;
@@ -1233,19 +1250,24 @@ function SC_spikeCutInPlace() {
         apiLogs.push("Removed " + vDeleted + " clip(s) from V1");
 
         var aDeleted = 0;
-        if (aTrack && aTrack.clips) {
-            for (var ai = aTrack.clips.numItems - 1; ai >= 0; ai--) {
-                try {
-                    var acItem = aTrack.clips[ai];
-                    if (typeof acItem.remove === "function") {
-                        acItem.remove(false, false);
-                        aDeleted++;
+        if (seq.audioTracks && seq.audioTracks.numTracks > 0) {
+            for (var at = 0; at < seq.audioTracks.numTracks; at++) {
+                var aTrk = seq.audioTracks[at];
+                if (aTrk && aTrk.clips) {
+                    for (var ai = aTrk.clips.numItems - 1; ai >= 0; ai--) {
+                        try {
+                            var acItem = aTrk.clips[ai];
+                            if (typeof acItem.remove === "function") {
+                                acItem.remove(false, false);
+                                aDeleted++;
+                            }
+                        } catch (aErr) {
+                            apiLogs.push("FAIL removing A" + (at + 1) + " clip " + ai + ": " + aErr.message);
+                        }
                     }
-                } catch (aErr) {
-                    apiLogs.push("FAIL removing A1 clip " + ai + ": " + aErr.message);
                 }
             }
-            apiLogs.push("Removed " + aDeleted + " clip(s) from A1");
+            apiLogs.push("Removed " + aDeleted + " clip(s) from audio tracks (A1, A2...)");
         }
 
         // 5. Place segments back-to-back using overwriteClip on the same sequence
