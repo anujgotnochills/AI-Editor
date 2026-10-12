@@ -83,6 +83,22 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Skip burning captions into video (output SRT/ASS only).",
     )
     p.add_argument(
+        "--tighten",
+        action="store_true",
+        help="Scale rough cut parameters tighter (scale=0.75x) without re-transcribing.",
+    )
+    p.add_argument(
+        "--loosen",
+        action="store_true",
+        help="Scale rough cut parameters looser (scale=1.35x) without re-transcribing.",
+    )
+    p.add_argument(
+        "--cut-preset",
+        default=None,
+        choices=["reel", "talking_head", "podcast", "vlog"],
+        help="Cut Engine pacing preset (default: talking_head).",
+    )
+    p.add_argument(
         "--debug",
         action="store_true",
         help="Enable verbose debug logging.",
@@ -324,8 +340,19 @@ def _run_rough_cut(
     padding_ms = float(pacing_cfg.get("padding_ms", 50.0))
     fillers = pacing_cfg.get("fillers", [])
 
-    # ── 4. Rough Cut & Captions ────────────────────────────────────────────────
-    logger.info("─── Step 4/5: Silence & Filler Removal (Rough Cut) ───────────")
+    # ── 4. Rough Cut & Captions (Cut Engine v2) ──────────────────────────────
+    logger.info("─── Step 4/5: Cut Engine v2 (Precision Rough Cut) ─────────────")
+    from src.cut_engine import CutEngine, CutEngineConfig
+
+    cut_cfg = CutEngineConfig.from_dict(
+        data=cfg,
+        client_overrides=client,
+        preset=getattr(args, "cut_preset", None) or client.get("cut_preset"),
+        tighten=getattr(args, "tighten", False),
+        loosen=getattr(args, "loosen", False),
+    )
+    cut_engine = CutEngine(cut_cfg, cache_dir=ctx.root / "cache" / "cut_engine")
+
     for filename, transcript in transcripts.items():
         stem = Path(filename).stem
         logger.info(f"  Processing: {filename}")
@@ -336,29 +363,24 @@ def _run_rough_cut(
             h_transcript = transcript
 
         clip_meta = next((c for c in clips if c["filename"] == filename), None)
-        clip_duration = transcript.get("duration_sec", 0.0)
-        if clip_meta and clip_meta.get("duration_sec"):
-            clip_duration = clip_meta["duration_sec"]
+        if not clip_meta:
+            continue
 
-        # Calculate kept segments
-        keep_segments = build_keep_segments(
-            h_transcript.get("words", []),
-            clip_duration=clip_duration,
-            min_silence_sec=min_silence_sec,
-            padding_ms=padding_ms,
-            fillers=fillers,
+        src_video_path = Path(clip_meta["path"])
+
+        # Execute Cut Engine v2
+        engine_res = cut_engine.process(
+            video_path=src_video_path,
+            transcript=h_transcript,
+            output_dir=ctx.output_dir,
+            tighten=getattr(args, "tighten", False),
+            loosen=getattr(args, "loosen", False),
+            render_video=True,
         )
 
-        cut_transcript = remap_transcript_to_cuts(h_transcript, keep_segments)
-
-        orig_dur = clip_duration
-        new_dur = cut_transcript["duration_sec"]
-        saved_dur = max(0.0, orig_dur - new_dur)
-        pct_saved = (saved_dur / orig_dur * 100) if orig_dur > 0 else 0
-        logger.info(
-            f"  [cutter] Kept {len(keep_segments)} speech segments | "
-            f"Duration: {orig_dur:.1f}s → {new_dur:.1f}s ({saved_dur:.1f}s cut, -{pct_saved:.0f}%)"
-        )
+        keep_segments = engine_res.keep_segments
+        cut_transcript = engine_res.remapped_transcript
+        rough_cut_video = engine_res.output_video_path or (ctx.output_dir / f"{stem}_rough_cut.mp4")
 
         # Cache remapped transcript
         cut_transcript_path = ctx.root / "cache" / "transcripts" / f"{stem}_rough_cut.json"
@@ -366,21 +388,6 @@ def _run_rough_cut(
         cut_transcript_path.write_text(
             json.dumps(cut_transcript, indent=2, ensure_ascii=False), encoding="utf-8"
         )
-
-        if clip_meta:
-            src_video_path = Path(clip_meta["path"])
-            has_audio = clip_meta.get("has_audio", True)
-            rough_cut_video = ctx.output_dir / f"{stem}_rough_cut.mp4"
-
-            # Render cut video
-            render_rough_cut(
-                video_path=src_video_path,
-                keep_segments=keep_segments,
-                output_path=rough_cut_video,
-                encoder=ffmpeg_cfg.get("video_encoder", "h264_nvenc"),
-                fallback_encoder=ffmpeg_cfg.get("fallback_encoder", "libx264"),
-                has_audio=has_audio,
-            )
 
             # English SRT
             en_srt = ctx.output_dir / f"{stem}_rough_cut_en.srt"

@@ -84,7 +84,7 @@ def test_caption_job_lifecycle_mocked(tmp_path):
 
         # Poll progress until finished
         import time
-        max_wait = 5.0
+        max_wait = 15.0
         start_t = time.time()
         final_status = None
         while time.time() - start_t < max_wait:

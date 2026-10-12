@@ -940,4 +940,151 @@ function SC_setPlayhead(seconds) {
     }
 }
 
+/**
+ * SC_importFCPXML
+ * Imports an FCPXML / Premiere XML sequence into the active Premiere Pro project.
+ */
+function SC_importFCPXML(xmlPath) {
+    try {
+        if (!xmlPath) return SC._err("xmlPath is empty.");
+        var xFile = new File(xmlPath);
+        if (!xFile.exists) return SC._err("XML file not found: " + xmlPath);
+
+        var preSeqCount = app.project.sequences.numSequences;
+
+        // Import the XML file
+        var importSuccess = app.project.importFiles([xFile.fsName], true, app.project.rootItem, false);
+        if (!importSuccess) {
+            return SC._err("app.project.importFiles failed for XML: " + xFile.fsName);
+        }
+
+        // Check if a new sequence was added
+        var newSeq = null;
+        if (app.project.sequences.numSequences > preSeqCount) {
+            newSeq = app.project.sequences[app.project.sequences.numSequences - 1];
+            if (newSeq && typeof app.project.openSequence === "function") {
+                try { app.project.openSequence(newSeq.sequenceID); } catch (eOpen) {}
+            }
+        }
+
+        return SC._ok({
+            method: "FCPXML Import",
+            path: xFile.fsName,
+            sequenceName: newSeq ? newSeq.name : xFile.name,
+            totalSequences: app.project.sequences.numSequences
+        });
+    } catch (e) {
+        return SC._err("SC_importFCPXML failed: " + e.message);
+    }
+}
+
+/**
+ * SC_createRoughCutSequence
+ * ExtendScript fallback to build a rough cut sequence directly from cut_list.json.
+ */
+function SC_createRoughCutSequence(cutListJsonPath) {
+    try {
+        if (!cutListJsonPath) return SC._err("cutListJsonPath is empty.");
+        var jFile = new File(cutListJsonPath);
+        if (!jFile.exists) return SC._err("cut_list.json not found: " + cutListJsonPath);
+
+        jFile.open("r");
+        var content = jFile.read();
+        jFile.close();
+
+        var cutData = JSON.parse(content);
+        var cuts = cutData.cuts || [];
+        var srcMeta = cutData.source_clip || {};
+        var srcPath = srcMeta.path;
+
+        if (!srcPath) return SC._err("source_clip.path missing in cut list.");
+        var srcFile = new File(srcPath);
+        if (!srcFile.exists) return SC._err("Source media file does not exist: " + srcPath);
+
+        // 1. Locate or import source ProjectItem
+        var root = app.project.rootItem;
+        var srcItem = null;
+        var normSrc = srcFile.fsName.replace(/\\/g, "/").toLowerCase();
+
+        function findItem(bin) {
+            for (var i = 0; i < bin.children.numItems; i++) {
+                var it = bin.children[i];
+                if (it.type === ProjectItemType.CLIP) {
+                    var mp = "";
+                    try { mp = it.getMediaPath(); } catch (pe) {}
+                    if (mp && mp.replace(/\\/g, "/").toLowerCase() === normSrc) {
+                        return it;
+                    }
+                } else if (it.type === ProjectItemType.BIN) {
+                    var found = findItem(it);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        srcItem = findItem(root);
+        if (!srcItem) {
+            app.project.importFiles([srcFile.fsName], true, root, false);
+            srcItem = findItem(root);
+        }
+        if (!srcItem) return SC._err("Could not find or import source clip into project.");
+
+        // 2. Create new rough cut sequence
+        var seqName = (srcFile.name.replace(/\.[^\.]+$/, "")) + " — StyleCut Rough Cut";
+        var newSeq = app.project.createNewSequence(seqName, "");
+        if (!newSeq) return SC._err("Failed to create new sequence.");
+
+        var vTrack = newSeq.videoTracks[0];
+        var aTrack = newSeq.audioTracks[0];
+
+        // 3. Assemble clips from cut list
+        var placedCount = 0;
+        for (var k = 0; k < cuts.length; k++) {
+            var c = cuts[k];
+            var inSec = parseFloat(c.source_in_sec) || 0;
+            var outSec = parseFloat(c.source_out_sec) || (inSec + 1);
+            var tlInSec = parseFloat(c.timeline_in_sec) || 0;
+
+            try {
+                // Set in/out on project item
+                srcItem.setInPoint(inSec, 4);
+                srcItem.setOutPoint(outSec, 4);
+
+                var tObj = new Time();
+                tObj.seconds = tlInSec;
+                vTrack.overwriteClip(srcItem, tObj);
+                placedCount++;
+            } catch (cutErr) {
+                $.writeln("[StyleCut] Cut placement warning at " + tlInSec + "s: " + cutErr.message);
+            }
+
+            // 4. Add marker if cut was flagged
+            if (c.flagged || c.confidence < 0.70) {
+                try {
+                    var mObj = newSeq.markers.createMarker(tlInSec);
+                    mObj.name = "Review Cut";
+                    mObj.comments = "Cut #" + (k + 1) + " (" + (c.reason || "review") + ") Conf: " + (c.confidence || 0.6);
+                } catch (mErr) {}
+            }
+        }
+
+        // Reset in/out on source project item
+        try {
+            srcItem.clearInPoint();
+            srcItem.clearOutPoint();
+        } catch (cErr) {}
+
+        return SC._ok({
+            method: "ExtendScript Sequence Assembly",
+            sequenceName: seqName,
+            placedCuts: placedCount,
+            totalCuts: cuts.length
+        });
+    } catch (e) {
+        return SC._err("SC_createRoughCutSequence failed: " + e.message);
+    }
+}
+
+
 
