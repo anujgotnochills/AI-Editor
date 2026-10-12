@@ -87,9 +87,12 @@ class TemplateInfo(BaseModel):
 
 
 class CaptionEditRequest(BaseModel):
-    manifest_path: str
+    manifest_path: Optional[str] = None
+    job_id: Optional[str] = None
     line_id: str
     text: Optional[str] = None
+    keyword: Optional[str] = None
+    words: Optional[list[dict[str, Any]]] = None
     start: Optional[float] = None
     duration: Optional[float] = None
     style_overrides: Optional[dict[str, Any]] = None

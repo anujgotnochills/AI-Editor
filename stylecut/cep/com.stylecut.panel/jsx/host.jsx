@@ -923,4 +923,21 @@ function SC_replaceCaptionClip(lineId, newClipPath, startTime) {
     }
 }
 
+/**
+ * SC_setPlayhead
+ * Seeks Premiere Pro active sequence playhead to given seconds.
+ */
+function SC_setPlayhead(seconds) {
+    try {
+        var seq = app.project.activeSequence;
+        if (!seq) return SC._err("No active sequence.");
+        var t = new Time();
+        t.seconds = parseFloat(seconds) || 0;
+        seq.setPlayerPosition(t.ticks);
+        return SC._ok({ seconds: seconds });
+    } catch (e) {
+        return SC._err("SC_setPlayhead failed: " + e.message);
+    }
+}
+
 

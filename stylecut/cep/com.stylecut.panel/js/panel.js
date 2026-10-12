@@ -24,6 +24,8 @@
     let currentMediaPath = "";
     let currentTimelineClips = [];
     let isProcessing = false;
+    let activeManifestPath = "";
+    let activeCaptionLines = [];
 
     /* ── CSInterface init ──────────────────────────────────────────────────── */
     const cs = new CSInterface();
@@ -51,6 +53,10 @@
     const progressFill  = $("progress-fill");
     const progressStep  = $("progress-step");
     const progressPct   = $("progress-pct");
+    const editorCard    = $("caption-editor-card");
+    const editorList    = $("caption-editor-list");
+    const editorLineCount = $("editor-line-count");
+    const btnRefreshCaptions = $("btn-refresh-captions");
 
     /* ── Logging & Status ──────────────────────────────────────────────────── */
     function log(msg, level = "info") {
@@ -363,6 +369,7 @@
                     log(`🎉 ${manifestRes.count || 'All'} editable per-line caption clips placed on ${manifestRes.track || 'Video Track 2'}!`);
                     log(`⚡ Template: ${manifestRes.template || templateName} | Clustered in 'StyleCut Captions' Bin`);
                     setStatus("Editable Captions on V2 ✓", "ok");
+                    await loadCaptionLines(resultData.manifest_path);
                 } else {
                     log(`Manifest placement fallback: ${manifestRes ? manifestRes.error : 'Unknown error'}. Trying single overlay...`, "warn");
                     if (resultData.overlay_mov) {
@@ -465,10 +472,306 @@
         }
     });
 
+    /* ── Real-Time Caption Editor ───────────────────────────────────────────── */
+    function formatTime(sec) {
+        const s = Math.max(0, parseFloat(sec) || 0);
+        const mins = Math.floor(s / 60);
+        const secs = Math.floor(s % 60);
+        const tenths = Math.floor((s % 1) * 10);
+        return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}.${tenths}`;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function renderLineWordChips(line) {
+        const currentKeyword = (line.keyword || "").trim().toLowerCase().replace(/[.,!?:;"'()[\]{}]/g, "");
+        let words = line.words;
+        if (!words || words.length === 0) {
+            words = (line.text || "").split(/\s+/).filter(Boolean).map(w => ({ word: w, highlight: false }));
+        }
+
+        return words.map(w => {
+            const rawWord = w.word || "";
+            const cleanWord = rawWord.trim().toLowerCase().replace(/[.,!?:;"'()[\]{}]/g, "");
+            const isHighlighted = w.highlight || (cleanWord && cleanWord === currentKeyword);
+            return `<button class="word-chip${isHighlighted ? ' highlighted' : ''}" type="button" data-word="${escapeHtml(rawWord)}" title="Click to highlight '${escapeHtml(rawWord)}' in gold">${escapeHtml(rawWord)}</button>`;
+        }).join("");
+    }
+
+    function renderCaptionEditorList() {
+        if (!editorList) return;
+        if (!activeCaptionLines || activeCaptionLines.length === 0) {
+            editorList.innerHTML = `<div style="font-size:11px;color:var(--text-muted);text-align:center;padding:16px 8px;">
+                Generate captions above to customize text & highlighted words in real-time.
+            </div>`;
+            if (editorLineCount) editorLineCount.textContent = "0 lines";
+            return;
+        }
+
+        if (editorLineCount) {
+            editorLineCount.textContent = `${activeCaptionLines.length} lines`;
+        }
+
+        editorList.innerHTML = activeCaptionLines.map(line => `
+            <div class="caption-line-card" id="card-${line.id}" data-line-id="${line.id}">
+                <div class="caption-line-top">
+                    <button class="caption-line-timing" type="button" data-action="seek" data-start="${line.start}" title="Jump playhead to ${formatTime(line.start)}">
+                        <span>⏱️</span> ${formatTime(line.start)} - ${formatTime(line.end)}
+                    </button>
+                    <span class="caption-line-status" id="status-${line.id}"></span>
+                </div>
+                <input type="text" class="caption-edit-input" id="input-${line.id}" data-line-id="${line.id}" value="${escapeHtml(line.text || '')}" placeholder="Edit line text…" aria-label="Line text" />
+                <div class="caption-word-chips" id="chips-${line.id}" data-line-id="${line.id}">
+                    ${renderLineWordChips(line)}
+                </div>
+            </div>
+        `).join("");
+    }
+
+    async function loadCaptionLines(manifestPath = "") {
+        try {
+            const endpoint = manifestPath ? `/captions/lines?manifest_path=${encodeURIComponent(manifestPath)}` : "/captions/lines";
+            const res = await apiGet(endpoint);
+            if (res.ok && res.lines && res.lines.length > 0) {
+                activeManifestPath = res.manifest_path || manifestPath;
+                activeCaptionLines = res.lines;
+                renderCaptionEditorList();
+                log(`Loaded ${res.lines.length} caption lines for real-time editing.`);
+                return true;
+            } else {
+                activeCaptionLines = [];
+                renderCaptionEditorList();
+                return false;
+            }
+        } catch (e) {
+            console.warn("Could not load caption lines:", e.message);
+            activeCaptionLines = [];
+            renderCaptionEditorList();
+            return false;
+        }
+    }
+
+    async function handleWordHighlight(lineId, word) {
+        const line = activeCaptionLines.find(l => l.id === lineId);
+        if (!line) return;
+
+        const cleanTarget = word.trim().toLowerCase().replace(/[.,!?:;"'()[\]{}]/g, "");
+        const currentKw = (line.keyword || "").trim().toLowerCase().replace(/[.,!?:;"'()[\]{}]/g, "");
+        if (cleanTarget === currentKw) {
+            log(`Word '${word}' is already the highlighted focus keyword for ${lineId}.`);
+            return;
+        }
+
+        const card = $(`card-${lineId}`);
+        const statusEl = $(`status-${lineId}`);
+        const chipsCont = $(`chips-${lineId}`);
+
+        // 1. Optimistic UI: highlight clicked chip instantly
+        if (chipsCont) {
+            const allChips = chipsCont.querySelectorAll(".word-chip");
+            allChips.forEach(c => {
+                const cClean = (c.dataset.word || "").trim().toLowerCase().replace(/[.,!?:;"'()[\]{}]/g, "");
+                if (cClean === cleanTarget) {
+                    c.classList.add("highlighted");
+                } else {
+                    c.classList.remove("highlighted");
+                }
+            });
+        }
+        if (card) {
+            document.querySelectorAll(".caption-line-card").forEach(c => c.classList.remove("active-line"));
+            card.classList.add("active-line");
+        }
+        if (statusEl) {
+            statusEl.textContent = "⚡ Rendering…";
+            statusEl.className = "caption-line-status updating";
+        }
+
+        try {
+            // 2. Request backend to re-render ONLY this clip (~0.7s on GPU)
+            const payload = {
+                manifest_path: activeManifestPath,
+                line_id: lineId,
+                keyword: word
+            };
+            const res = await apiPost("/captions/edit", payload);
+            if (!res.ok) throw new Error(res.error || "Failed to update line");
+
+            // 3. Update local model
+            if (res.line) {
+                Object.assign(line, res.line);
+            } else {
+                line.keyword = word;
+            }
+
+            // 4. Replace clip on Video Track 2 in Premiere Pro in real-time!
+            const replaceRes = await evalScript("SC_replaceCaptionClip", res.line_id, res.clip_path, res.start);
+            if (!replaceRes.ok) {
+                log(`Clip replacement notice: ${replaceRes.error}`, "warn");
+            }
+
+            // 5. Jump playhead to caption timestamp so editor sees live result in Program monitor!
+            await evalScript("SC_setPlayhead", res.start);
+
+            if (statusEl) {
+                statusEl.textContent = "✓ Live on V2";
+                statusEl.className = "caption-line-status updated";
+                setTimeout(() => {
+                    if (statusEl && statusEl.textContent === "✓ Live on V2") {
+                        statusEl.textContent = "";
+                        statusEl.className = "caption-line-status";
+                    }
+                }, 2200);
+            }
+
+            log(`⚡ Word '${word}' highlighted in gold & updated on V2 at ${formatTime(res.start)}!`);
+        } catch (err) {
+            log(`Failed to customize highlight for ${lineId}: ${err.message}`, "error");
+            if (statusEl) {
+                statusEl.textContent = "⚠️ Error";
+                statusEl.className = "caption-line-status error";
+            }
+            if (chipsCont) {
+                chipsCont.innerHTML = renderLineWordChips(line);
+            }
+        }
+    }
+
+    async function handleTextChange(lineId, newText) {
+        const line = activeCaptionLines.find(l => l.id === lineId);
+        if (!line) return;
+
+        if (newText.trim() === (line.text || "").trim()) return;
+
+        const card = $(`card-${lineId}`);
+        const statusEl = $(`status-${lineId}`);
+        const inputEl = $(`input-${lineId}`);
+        const chipsCont = $(`chips-${lineId}`);
+
+        if (card) {
+            document.querySelectorAll(".caption-line-card").forEach(c => c.classList.remove("active-line"));
+            card.classList.add("active-line");
+        }
+        if (statusEl) {
+            statusEl.textContent = "⚡ Updating text…";
+            statusEl.className = "caption-line-status updating";
+        }
+
+        try {
+            const payload = {
+                manifest_path: activeManifestPath,
+                line_id: lineId,
+                text: newText,
+                keyword: line.keyword
+            };
+            const res = await apiPost("/captions/edit", payload);
+            if (!res.ok) throw new Error(res.error || "Failed to update line text");
+
+            if (res.line) {
+                Object.assign(line, res.line);
+            } else {
+                line.text = newText;
+            }
+
+            if (inputEl) inputEl.value = line.text;
+            if (chipsCont) chipsCont.innerHTML = renderLineWordChips(line);
+
+            // Replace clip on Video Track 2 in Premiere Pro
+            const replaceRes = await evalScript("SC_replaceCaptionClip", res.line_id, res.clip_path, res.start);
+            if (!replaceRes.ok) {
+                log(`Clip replacement notice: ${replaceRes.error}`, "warn");
+            }
+
+            // Jump playhead so editor sees update immediately
+            await evalScript("SC_setPlayhead", res.start);
+
+            if (statusEl) {
+                statusEl.textContent = "✓ Live on V2";
+                statusEl.className = "caption-line-status updated";
+                setTimeout(() => {
+                    if (statusEl && statusEl.textContent === "✓ Live on V2") {
+                        statusEl.textContent = "";
+                        statusEl.className = "caption-line-status";
+                    }
+                }, 2200);
+            }
+
+            log(`✏️ Line ${lineId} text updated to "${newText}" & replaced on V2 at ${formatTime(res.start)}!`);
+        } catch (err) {
+            log(`Failed to update text for ${lineId}: ${err.message}`, "error");
+            if (statusEl) {
+                statusEl.textContent = "⚠️ Error";
+                statusEl.className = "caption-line-status error";
+            }
+            if (inputEl) inputEl.value = line.text;
+        }
+    }
+
     /* ── Event Listeners ───────────────────────────────────────────────────── */
     btnInfo.addEventListener("click", detectSequenceMedia);
     btnGenerate.addEventListener("click", generateAndInsertCaptions);
     btnPing.addEventListener("click", () => pingEngine(false));
+
+    if (btnRefreshCaptions) {
+        btnRefreshCaptions.addEventListener("click", () => {
+            log("Refreshing caption lines from engine…");
+            loadCaptionLines(activeManifestPath);
+        });
+    }
+
+    if (editorList) {
+        editorList.addEventListener("click", e => {
+            // 1. Timing button clicked -> seek playhead
+            const timingBtn = e.target.closest("[data-action='seek']");
+            if (timingBtn) {
+                const startSec = parseFloat(timingBtn.dataset.start);
+                evalScript("SC_setPlayhead", startSec);
+                const card = timingBtn.closest(".caption-line-card");
+                if (card) {
+                    document.querySelectorAll(".caption-line-card").forEach(c => c.classList.remove("active-line"));
+                    card.classList.add("active-line");
+                }
+                return;
+            }
+
+            // 2. Word chip clicked -> highlight in real time
+            const chip = e.target.closest(".word-chip");
+            if (chip) {
+                const word = chip.dataset.word;
+                const card = chip.closest(".caption-line-card");
+                const lineId = card ? card.dataset.lineId : null;
+                if (lineId && word) {
+                    handleWordHighlight(lineId, word);
+                }
+                return;
+            }
+        });
+
+        editorList.addEventListener("keydown", e => {
+            if (e.target.classList.contains("caption-edit-input") && e.key === "Enter") {
+                e.preventDefault();
+                e.target.blur();
+            }
+        });
+
+        editorList.addEventListener("change", e => {
+            if (e.target.classList.contains("caption-edit-input")) {
+                const lineId = e.target.dataset.lineId;
+                const newText = e.target.value.trim();
+                if (lineId) {
+                    handleTextChange(lineId, newText);
+                }
+            }
+        });
+    }
 
     const btnReload = $("btn-reload");
     if (btnReload) {
@@ -528,6 +831,9 @@
 
         // Try detecting initial sequence after brief delay
         setTimeout(detectSequenceMedia, 800);
+
+        // Automatically populate caption editor if captions already exist
+        setTimeout(() => loadCaptionLines(), 1200);
     }
 
     if (document.readyState === "loading") {
@@ -537,6 +843,6 @@
     }
 
     // Expose for testing and debugging from DevTools
-    window._SC = { evalScript, pingEngine, detectSequenceMedia, generateAndInsertCaptions, boot };
+    window._SC = { evalScript, pingEngine, detectSequenceMedia, generateAndInsertCaptions, loadCaptionLines, handleWordHighlight, handleTextChange, boot };
 
 })();
